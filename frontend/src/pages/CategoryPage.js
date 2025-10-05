@@ -1,6 +1,6 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Breadcrumb, Form } from 'react-bootstrap';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Form } from 'react-bootstrap';
+import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { productAPI, categoryAPI } from '../utils/api';
 
@@ -57,17 +57,7 @@ const CategoryPage = () => {
   const genderTitle = gender === 'pria' ? 'Pria' : 'Wanita';
 
   return (
-    <Container className="py-4">
-      <Breadcrumb>
-        <Breadcrumb.Item linkAs={Link} linkProps={{ to: '/' }}>Beranda</Breadcrumb.Item>
-        <Breadcrumb.Item active>Koleksi {genderTitle}</Breadcrumb.Item>
-        {category && category !== 'all' && (
-          <Breadcrumb.Item active>
-            {categories.find(c => c.slug === category)?.name || category}
-          </Breadcrumb.Item>
-        )}
-      </Breadcrumb>
-
+    <Container className="py-4 with-navbar-offset">
       <h1 className="mb-4">Koleksi {genderTitle}</h1>
 
       <Row className="mb-4">

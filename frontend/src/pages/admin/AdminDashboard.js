@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import { FaBox, FaTags } from 'react-icons/fa';
 import AdminSidebar from '../../components/AdminSidebar';
 import { productAPI, categoryAPI } from '../../utils/api';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 
 // Components
@@ -15,15 +15,22 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminAddProduct from './pages/admin/AddProduct';
 import AdminCategories from './pages/admin/AdminCategories';
+import SejarahPage from './pages/SejarahPage';
+import TokoPage from './pages/TokoPage';
 
 function App() {
+  const location = useLocation();
+  const hideHeader = location.pathname.startsWith('/admin') || location.pathname.startsWith('/login');
   return (
     <div className="App">
-      <Header />
+      {!hideHeader && <Header />}
       <main>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/category/:gender" element={<CategoryPage />} />
+          <Route path="/category/:gender/:category" element={<CategoryPage />} />
+          <Route path="/sejarah" element={<SejarahPage />} />
+          <Route path="/toko" element={<TokoPage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin" element={<AdminDashboard />} />

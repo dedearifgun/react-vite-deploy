@@ -13,11 +13,6 @@ code {
 }
 
 /* Custom styles */
-.hero-section {
-  background-color: #f8f9fa;
-  padding: 80px 0;
-  margin-bottom: 40px;
-}
 
 .product-card {
   margin-bottom: 30px;
@@ -55,12 +50,6 @@ code {
   text-align: center;
 }
 
-.admin-sidebar {
-  min-height: 100vh;
-  background-color: #343a40;
-  color: white;
-}
-
 .admin-content {
   padding: 20px;
 }
@@ -78,4 +67,9 @@ code {
   color: white;
   padding: 40px 0;
   margin-top: 60px;
+}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+* {
+  font-family: 'Poppins', sans-serif;
 }

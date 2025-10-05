@@ -6,16 +6,13 @@ const Hero = () => {
   return (
     <div className="hero-section">
       <Container>
-        <Row className="justify-content-center text-center">
-          <Col md={8}>
-            <h1>Kerajinan Kulit Premium</h1>
-            <p className="lead mb-4">
-              Temukan koleksi kerajinan kulit berkualitas tinggi dengan desain eksklusif dan bahan terbaik.
-              Kami menawarkan berbagai produk untuk pria dan wanita.
-            </p>
-            <div className="d-flex justify-content-center gap-3">
-              <Button as={Link} to="/category/pria" variant="dark" size="lg">Koleksi Pria</Button>
-              <Button as={Link} to="/category/wanita" variant="outline-light" size="lg">Koleksi Wanita</Button>
+        <Row className="justify-content-start text-start">
+          <Col md={10} lg={6}>
+            <h1 className="display-4 fw-bold">Kualitas Tertinggi. Harga Jujur.</h1>
+            <p className="lead mb-4">Handcrafted with integrity.</p>
+            <div className="d-flex justify-content-start gap-3">
+              <Button as={Link} to="/category/pria" variant="light" size="lg">PRIA</Button>
+              <Button as={Link} to="/category/wanita" variant="light" size="lg">WANITA</Button>
             </div>
           </Col>
         </Row>

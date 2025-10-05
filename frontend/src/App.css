@@ -13,23 +13,112 @@ main {
   font-size: 1.5rem;
 }
 
+/* Navbar transparan dengan teks putih, hover putih background dan teks hitam */
+.navbar-transparent {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  position: relative;
+  border: none !important;
+  box-shadow: none !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  z-index: 1000;
+}
+
+/* Override semua kemungkinan class Bootstrap navbar */
+.navbar-transparent.navbar,
+.navbar-transparent.navbar-light,
+.navbar-transparent.navbar-expand-lg,
+.navbar-transparent.navbar-expand,
+.navbar-transparent.navbar-dark,
+.navbar-transparent.bg-light,
+.navbar-transparent.bg-dark,
+.navbar-transparent.bg-primary,
+.navbar-transparent.bg-secondary,
+.navbar-transparent.bg-success,
+.navbar-transparent.bg-info,
+.navbar-transparent.bg-warning,
+.navbar-transparent.bg-danger {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Hapus pseudo-element untuk mencegah overlay putih */
+
+.navbar-transparent.scrolled .navbar-brand,
+.navbar-transparent.scrolled .nav-link {
+  color: #000 !important;
+}
+
+.navbar-transparent .container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.navbar-transparent .navbar-brand,
+.navbar-transparent .nav-link { 
+  color: #fff !important; 
+  transition: color 0.3s ease;
+}
+
+.navbar-transparent .nav-link { 
+  padding: 6px 12px; 
+  transition: color 0.3s ease; 
+}
+
+/* Efek hover dengan overlay putih dari kiri ke kanan */
+.navbar-transparent:hover .navbar-brand,
+.navbar-transparent:hover .nav-link { 
+  color: #000 !important; 
+}
+
+.navbar-center-brand { 
+  justify-self: center; 
+}
+
+/* CSS dengan specificity tinggi untuk memastikan navbar transparan */
+.navbar.navbar-expand-lg.navbar-transparent.fixed-top {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Override Bootstrap navbar default styling */
+body .navbar.navbar-transparent {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
 .hero-section {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('./assets/hero-bg.jpg');
+  background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('./assets/hero-bg.jpg');
   background-size: cover;
   background-position: center;
   color: white;
-  text-align: center;
-  padding: 100px 0;
+  min-height: 100vh; /* foto benar-benar full */
+  display: flex;
+  align-items: center;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 .hero-section h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
+  font-size: 3.2rem;
+  margin-bottom: 12px;
 }
 
 .hero-section p {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+/* Pastikan tidak ada padding top pada container pertama di hero */
+.hero-section > .container {
+  padding-top: 0 !important;
 }
 
 .category-section {
@@ -87,4 +176,231 @@ main {
   background-color: #343a40;
   color: white;
   border-color: #343a40;
+}
+/* Navbar teks transparan sepenuhnya */
+.text-navbar.fixed-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: transparent !important;
+  backdrop-filter: none;
+  border: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  z-index: 1000;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.text-navbar__inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+}
+
+.text-navbar__brand {
+  justify-self: center;
+  color: #000;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem; /* sedikit diperbesar */
+  transition: color 0.25s ease;
+}
+
+.text-nav-link {
+  color: #000;
+  text-decoration: none;
+  margin-right: 16px;
+  transition: color 0.25s ease;
+}
+
+.text-navbar__left { justify-self: start; }
+.text-navbar__right { justify-self: end; }
+
+.text-navbar__left .text-nav-link:last-child,
+.text-navbar__right .text-nav-link:last-child {
+  margin-right: 0;
+}
+
+.text-nav-link.active,
+.text-nav-link:hover {
+  color: #333;
+}
+
+/* Semua teks navbar default hitam */
+.text-navbar__left .text-nav-link,
+.text-navbar__right .text-nav-link,
+.text-navbar__brand {
+  color: #000 !important;
+}
+
+/* Saat di-scroll: background putih, teks hitam */
+.text-navbar.scrolled {
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.text-navbar.scrolled .text-navbar__brand,
+.text-navbar.scrolled .text-nav-link {
+  color: #000;
+}
+
+.text-navbar.scrolled .text-nav-link:hover,
+.text-navbar.scrolled .text-nav-link.active {
+  color: #333;
+}
+
+/* ====== Testimonials Marquee ====== */
+.testimonials-marquee {
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  overflow: hidden;
+  padding: 10px 0;
+}
+
+/* Offset konten ketika menggunakan navbar fixed-top */
+.with-navbar-offset {
+  padding-top: 80px; /* beri jarak aman di bawah navbar */
+}
+
+.testimonials-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 28px;
+  white-space: nowrap;
+  will-change: transform;
+  animation: testimonials-scroll 24s linear infinite;
+}
+
+.testimonial-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  opacity: 0.95;
+}
+
+.testimonial-item .stars { display: inline-flex; gap: 2px; }
+.testimonial-item .quote { font-weight: 500; }
+.testimonial-item .author { color: #ddd; margin-left: 6px; }
+
+@keyframes testimonials-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.confirm-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+  border-radius: 12px;
+  padding: 24px 20px;
+  width: 370px;
+  border: 1px solid #e5e7eb;
+}
+
+.confirm-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #fee2e2; /* red-100 */
+  border-radius: 9999px;
+}
+
+.confirm-title {
+  color: #111827; /* gray-900 */
+  font-weight: 600;
+  margin-top: 12px;
+  font-size: 20px;
+}
+
+.confirm-message {
+  color: #4b5563; /* gray-600 */
+  font-size: 14px;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.btn-cancel {
+  width: 100%;
+  max-width: 144px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db; /* gray-300 */
+  background: #fff;
+  color: #4b5563; /* gray-600 */
+  font-weight: 500;
+  font-size: 14px;
+}
+.btn-cancel:hover { background: #f3f4f6; }
+
+.btn-confirm {
+  width: 100%;
+  max-width: 144px;
+  height: 40px;
+  border-radius: 6px;
+  border: none;
+  background: #dc2626; /* red-600 */
+  color: #fff;
+  font-weight: 500;
+  font-size: 14px;
+}
+.btn-confirm:hover { background: #b91c1c; }
+.site-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 64px 0; /* py-16 */
+  background: #f8fafc; /* slate-50 */
+  font-size: 14px; /* text-sm */
+  color: rgba(31, 41, 55, 0.7); /* gray-800/70 */
+}
+
+.footer-socials {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* gap-4 */
+  color: #6366F1; /* indigo-500 */
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  transition: transform 0.3s ease;
+}
+.social-link:hover {
+  transform: translateY(-3px);
+}
+
+.footer-copy {
+  margin-top: 24px; /* mt-8 */
+  text-align: center;
 }

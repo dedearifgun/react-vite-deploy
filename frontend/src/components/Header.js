@@ -1,25 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 
+// Navbar teks saja: fixed-top, transparan total, tanpa komponen Bootstrap
 const Header = () => {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" sticky="top">
-      <Container>
-        <Navbar.Brand as={Link} to="/">Leather Craft Shop</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
-            <Nav.Link as={NavLink} to="/" end>Beranda</Nav.Link>
-            <NavDropdown title="Kategori" id="basic-nav-dropdown">
-              <NavDropdown.Item as={Link} to="/category/pria">Pria</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/category/wanita">Wanita</NavDropdown.Item>
-            </NavDropdown>
-            <Nav.Link as={NavLink} to="/login">Admin</Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+    <div className={`text-navbar fixed-top ${scrolled ? 'scrolled' : ''}`}>
+      <div className="text-navbar__inner">
+        <nav className="text-navbar__left">
+          <NavLink to="/category/pria" className="text-nav-link">PRIA</NavLink>
+          <NavLink to="/category/wanita" className="text-nav-link">WANITA</NavLink>
+        </nav>
+        <Link to="/" className="text-navbar__brand">Leather Craft Shop</Link>
+        <nav className="text-navbar__right">
+          <NavLink to="/sejarah" className="text-nav-link">SEJARAH</NavLink>
+          <NavLink to="/toko" className="text-nav-link">TOKO</NavLink>
+        </nav>
+      </div>
+    </div>
   );
 };
 

@@ -1,15 +1,14 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 import { productAPI, categoryAPI } from '../utils/api';
 import Hero from '../components/Hero';
+import Tetimoni from '../components/Tetimoni';
 import ProductCard from '../components/ProductCard';
 import CategoryCard from '../components/CategoryCard';
 
 const HomePage = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,7 +31,7 @@ const HomePage = () => {
         setFeaturedProducts([]);
         setCategories([]);
       } finally {
-        setLoading(false);
+        // no-op
       }
     };
 
@@ -42,6 +41,7 @@ const HomePage = () => {
   return (
     <>
       <Hero />
+      <Tetimoni />
       <Container className="py-5">
         <h2 className="text-center mb-4">Kategori Populer</h2>
         <Row>
@@ -78,7 +78,7 @@ const HomePage = () => {
           </Col>
           <Col md={6}>
             <Card>
-              <Card.Img variant="top" src="https://via.placeholder.com/600x400?text=Tentang+Kami" />
+              <Card.Img variant="top" src="/images/tentang-kami.svg" alt="Tentang Kami" />
             </Card>
           </Col>
         </Row>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form } from 'react-bootstrap';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import AdminSidebar from '../../components/AdminSidebar';
 import { productAPI, categoryAPI } from '../../utils/api';
 import { resolveAssetUrl } from '../../utils/assets';
@@ -25,6 +26,7 @@ const AdminProducts = () => {
   const [colorImagesFiles, setColorImagesFiles] = useState({});
   const [additionalImagesFiles, setAdditionalImagesFiles] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -274,16 +276,7 @@ const AdminProducts = () => {
                           <Button 
                             variant="outline-danger" 
                             size="sm"
-                            onClick={async () => {
-                              if (!window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
-                              try {
-                                const idToDelete = product._id || product.id;
-                                await productAPI.deleteProduct(idToDelete);
-                                setProducts(products.filter(p => (p._id || p.id) !== idToDelete));
-                              } catch (err) {
-                                alert('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
-                              }
-                            }}
+                            onClick={() => setConfirmDelete({ show: true, id: product._id || product.id })}
                           >
                             <i className="fas fa-trash"></i>
                           </Button>
@@ -476,6 +469,26 @@ const AdminProducts = () => {
           </Modal.Footer>
         </Form>
       </Modal>
+
+      {/* Dialog Konfirmasi Hapus Produk */}
+      <ConfirmDialog
+        show={confirmDelete.show}
+        title="Are you sure?"
+        message={"Do you really want to delete this product? This action cannot be undone."}
+        onCancel={() => setConfirmDelete({ show: false, id: null })}
+        onConfirm={async () => {
+          try {
+            const idToDelete = confirmDelete.id;
+            if (!idToDelete) return;
+            await productAPI.deleteProduct(idToDelete);
+            setProducts(products.filter(p => (p._id || p.id) !== idToDelete));
+          } catch (err) {
+            alert('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
+          } finally {
+            setConfirmDelete({ show: false, id: null });
+          }
+        }}
+      />
     </div>
   );
 };

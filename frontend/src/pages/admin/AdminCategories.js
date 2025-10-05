@@ -1,5 +1,6 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import AdminSidebar from '../../components/AdminSidebar';
 import { categoryAPI } from '../../utils/api';
@@ -21,13 +22,13 @@ const AdminCategories = () => {
   });
 
   // Data dummy fallback tanpa deskripsi & gambar
-  const dummyCategories = [
+  const dummyCategories = useMemo(() => ([
     { _id: '1', name: 'Dompet', slug: 'dompet', gender: 'unisex', subcategories: [], createdAt: '2023-05-10T08:30:00Z' },
     { _id: '2', name: 'Tas', slug: 'tas', gender: 'unisex', subcategories: [], createdAt: '2023-05-11T09:15:00Z' },
     { _id: '3', name: 'Ikat Pinggang', slug: 'ikat-pinggang', gender: 'unisex', subcategories: [], createdAt: '2023-05-12T10:45:00Z' },
     { _id: '4', name: 'Jaket', slug: 'jaket', gender: 'pria', subcategories: [], createdAt: '2023-05-13T14:20:00Z' },
     { _id: '5', name: 'Aksesoris', slug: 'aksesoris', gender: 'unisex', subcategories: [], createdAt: '2023-05-14T16:10:00Z' }
-  ];
+  ]), []);
 
   // Load data kategori
   useEffect(() => {
@@ -45,7 +46,7 @@ const AdminCategories = () => {
       }
     };
     fetchCategories();
-  }, []);
+  }, [dummyCategories]);
 
   // Format tanggal
   const formatDate = (dateString) => {
@@ -125,17 +126,9 @@ const AdminCategories = () => {
   };
 
   // Hapus kategori
-  const handleDelete = async (categoryId) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
-      try {
-        await categoryAPI.deleteCategory(categoryId);
-        const updatedCategories = categories.filter(cat => cat._id !== categoryId);
-        setCategories(updatedCategories);
-        alert('Kategori berhasil dihapus!');
-      } catch (err) {
-        alert('Gagal menghapus kategori: ' + (err?.response?.data?.message || err.message));
-      }
-    }
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
+  const handleDelete = (categoryId) => {
+    setConfirmDelete({ show: true, id: categoryId });
   };
 
   return (
@@ -265,6 +258,27 @@ const AdminCategories = () => {
             </Modal.Footer>
           </Form>
         </Modal>
+
+        {/* Dialog Konfirmasi Hapus Kategori */}
+        <ConfirmDialog
+          show={confirmDelete.show}
+          title="Are you sure?"
+          message={"Do you really want to delete this category? This action cannot be undone."}
+          onCancel={() => setConfirmDelete({ show: false, id: null })}
+          onConfirm={async () => {
+            try {
+              const idToDelete = confirmDelete.id;
+              if (!idToDelete) return;
+              await categoryAPI.deleteCategory(idToDelete);
+              const updatedCategories = categories.filter(cat => cat._id !== idToDelete);
+              setCategories(updatedCategories);
+            } catch (err) {
+              alert('Gagal menghapus kategori: ' + (err?.response?.data?.message || err.message));
+            } finally {
+              setConfirmDelete({ show: false, id: null });
+            }
+          }}
+        />
       </Container>
     </div>
   );
