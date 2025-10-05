@@ -34,6 +34,11 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Gambar produk harus diisi']
   },
+  imagesByColor: {
+    type: Map,
+    of: String,
+    default: {}
+  },
   additionalImages: [String],
   colors: [String],
   sizes: [String],

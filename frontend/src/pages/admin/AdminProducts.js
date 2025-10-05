@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form } from 'react-bootstrap';
 import AdminSidebar from '../../components/AdminSidebar';
 import { productAPI, categoryAPI } from '../../utils/api';
@@ -19,8 +19,11 @@ const AdminProducts = () => {
     price: '',
     imageFile: null,
     sizes: [],
-    colors: []
+    colors: [],
+    stock: 7
   });
+  const [colorImagesFiles, setColorImagesFiles] = useState({});
+  const [additionalImagesFiles, setAdditionalImagesFiles] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -44,9 +47,11 @@ const AdminProducts = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setCurrentProduct({ _id: '', name: '', category: '', gender: 'pria', price: '', imageFile: null, sizes: [], colors: [] });
+    setCurrentProduct({ _id: '', name: '', category: '', gender: 'pria', price: '', imageFile: null, sizes: [], colors: [], stock: 7, mainImagesFiles: [] });
     setSizeInput('');
     setColorInput('');
+    setColorImagesFiles({});
+    setAdditionalImagesFiles([]);
     setIsEditing(false);
   };
 
@@ -60,7 +65,9 @@ const AdminProducts = () => {
         price: product.price || '',
         imageFile: null,
         sizes: product.sizes || [],
-        colors: product.colors || []
+        colors: product.colors || [],
+        stock: product.stock ?? 7,
+        imagesByColor: product.imagesByColor || {}
       });
       setIsEditing(true);
     } else {
@@ -78,8 +85,29 @@ const AdminProducts = () => {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0] || null;
-    setCurrentProduct(prev => ({ ...prev, imageFile: file }));
+    const files = Array.from(e.target.files || []);
+    const valid = files.filter(f => (f.size || 0) <= 1024 * 1024);
+    if (files.length !== valid.length) {
+      alert('Sebagian gambar utama melebihi 1MB dan diabaikan.');
+    }
+    setCurrentProduct(prev => ({ ...prev, mainImagesFiles: valid, imageFile: valid[0] || null }));
+  };
+
+  const handleAdditionalImagesChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    const valid = files.filter(f => (f.size || 0) <= 1024 * 1024);
+    if (files.length !== valid.length) {
+      alert('Sebagian gambar tambahan melebihi 1MB dan diabaikan.');
+    }
+    setAdditionalImagesFiles(valid);
+  };
+
+  const handleColorImageChange = (color, file) => {
+    if (file && (file.size || 0) > 1024 * 1024) {
+      alert('Gambar warna melebihi 1MB dan diabaikan.');
+      return;
+    }
+    setColorImagesFiles(prev => ({ ...prev, [color]: file }));
   };
 
   const addSizeFromInput = (e) => {
@@ -132,9 +160,20 @@ const AdminProducts = () => {
         fd.append('category', currentProduct.category);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
-        if (currentProduct.imageFile) fd.append('image', currentProduct.imageFile);
+        // stok dihapus dari form; jangan kirim
+        // main images: allow multiple; server will set pertama sebagai imageUrl
+        (currentProduct.mainImagesFiles || (currentProduct.imageFile ? [currentProduct.imageFile] : []))
+          .forEach(f => fd.append('image', f));
         (currentProduct.sizes || []).forEach(s => fd.append('sizes[]', s));
         (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
+        fd.append('sizesJson', JSON.stringify(currentProduct.sizes || []));
+        fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
+        // gallery additional images
+        additionalImagesFiles.forEach(f => fd.append('additionalImages', f));
+        // color-specific images using fieldname colorImages_<color>
+        Object.entries(colorImagesFiles).forEach(([color, file]) => {
+          if (file) fd.append(`colorImages_${color}`, file);
+        });
 
         const res = await productAPI.createProduct(fd);
         const data = res?.data?.data || res?.data;
@@ -145,9 +184,17 @@ const AdminProducts = () => {
         fd.append('category', currentProduct.category);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
+        // stok dihapus dari form; jangan kirim
         (currentProduct.sizes || []).forEach(s => fd.append('sizes[]', s));
         (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
-        if (currentProduct.imageFile) fd.append('image', currentProduct.imageFile);
+        fd.append('sizesJson', JSON.stringify(currentProduct.sizes || []));
+        fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
+        (currentProduct.mainImagesFiles || (currentProduct.imageFile ? [currentProduct.imageFile] : []))
+          .forEach(f => fd.append('image', f));
+        additionalImagesFiles.forEach(f => fd.append('additionalImages', f));
+        Object.entries(colorImagesFiles).forEach(([color, file]) => {
+          if (file) fd.append(`colorImages_${color}`, file);
+        });
 
         const res = await productAPI.updateProduct(currentProduct._id, fd);
         const data = res?.data?.data || res?.data;
@@ -227,9 +274,14 @@ const AdminProducts = () => {
                           <Button 
                             variant="outline-danger" 
                             size="sm"
-                            onClick={() => {
-                              if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-                                setProducts(products.filter(p => (p._id || p.id) !== (product._id || product.id)));
+                            onClick={async () => {
+                              if (!window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
+                              try {
+                                const idToDelete = product._id || product.id;
+                                await productAPI.deleteProduct(idToDelete);
+                                setProducts(products.filter(p => (p._id || p.id) !== idToDelete));
+                              } catch (err) {
+                                alert('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
                               }
                             }}
                           >
@@ -315,16 +367,28 @@ const AdminProducts = () => {
             </Row>
 
             <Form.Group className="mb-3">
-              <Form.Label>Upload Gambar Produk</Form.Label>
+              <Form.Label>Upload Gambar Produk (bisa lebih dari 1)</Form.Label>
               <Form.Control 
                 type="file"
+                multiple
                 accept="image/*"
                 onChange={handleFileChange}
                 required={!isEditing}
               />
               <Form.Text className="text-muted">
-                Format: JPG, PNG, WEBP. Maks 5MB.
+                Format: JPG, PNG, WEBP. Maks 1MB per file.
               </Form.Text>
+            </Form.Group>
+
+            {/* Galeri tambahan */}
+            <Form.Group className="mb-3">
+              <Form.Label>Gambar Tambahan (opsional)</Form.Label>
+              <Form.Control 
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleAdditionalImagesChange}
+              />
             </Form.Group>
 
             {/* Warna Produk */}
@@ -351,6 +415,31 @@ const AdminProducts = () => {
               </div>
             </Form.Group>
 
+            {(currentProduct.colors || []).map((c) => {
+              const localFile = colorImagesFiles[c];
+              const localPreview = localFile ? URL.createObjectURL(localFile) : null;
+              const existingPreview = isEditing && currentProduct.imagesByColor && currentProduct.imagesByColor[c]
+                ? resolveAssetUrl(currentProduct.imagesByColor[c])
+                : null;
+              const previewSrc = localPreview || existingPreview || null;
+              return (
+                <Form.Group className="mb-3" key={`color-${c}`}>
+                  <Form.Label>Gambar untuk warna: {c}</Form.Label>
+                  <div className="d-flex align-items-center gap-3">
+                    <Form.Control
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleColorImageChange(c, e.target.files?.[0] || null)}
+                    />
+                    {previewSrc && (
+                      <img src={previewSrc} alt={`preview-${c}`} style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }} />
+                    )}
+                  </div>
+                  <Form.Text className="text-muted">Maks 1MB per file.</Form.Text>
+                </Form.Group>
+              );
+            })}
+
             {/* Ukuran Sepatu */}
             <Form.Group className="mb-3">
               <Form.Label>Ukuran Sepatu</Form.Label>
@@ -374,6 +463,8 @@ const AdminProducts = () => {
                 ))}
               </div>
             </Form.Group>
+
+            {/* Stok dihapus sesuai permintaan */}
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>

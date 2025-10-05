@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form } from 'react-bootstrap';
 import AdminSidebar from '../../components/AdminSidebar';
 import { productAPI, categoryAPI } from '../../utils/api';
@@ -10,6 +10,9 @@ const AdminProducts = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [sizeInput, setSizeInput] = useState('');
+  const [colorInput, setColorInput] = useState('');
+  const [colorImagesFiles, setColorImagesFiles] = useState({});
+  const [additionalImagesFiles, setAdditionalImagesFiles] = useState([]);
   const [currentProduct, setCurrentProduct] = useState({
     _id: '',
     name: '',
@@ -17,7 +20,9 @@ const AdminProducts = () => {
     gender: 'pria',
     price: '',
     imageFile: null,
-    sizes: []
+    sizes: [],
+    colors: [],
+    stock: 7
   });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -46,8 +51,11 @@ const AdminProducts = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setCurrentProduct({ _id: '', name: '', category: '', gender: 'pria', price: '', imageFile: null, sizes: [] });
+    setCurrentProduct({ _id: '', name: '', category: '', gender: 'pria', price: '', imageFile: null, sizes: [], colors: [], stock: 7 });
     setSizeInput('');
+    setColorInput('');
+    setColorImagesFiles({});
+    setAdditionalImagesFiles([]);
     setIsEditing(false);
   };
 
@@ -60,7 +68,10 @@ const AdminProducts = () => {
         gender: product.gender || 'pria',
         price: product.price || '',
         imageFile: null,
-        sizes: product.sizes || []
+        sizes: product.sizes || [],
+        colors: product.colors || [],
+        imagesByColor: product.imagesByColor || {},
+        stock: product.stock ?? 7
       });
       setIsEditing(true);
     } else {
@@ -78,8 +89,31 @@ const AdminProducts = () => {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0] || null;
-    setCurrentProduct(prev => ({ ...prev, imageFile: file }));
+    const files = Array.from(e.target.files || []);
+    // Client-side 1MB validation: ignore files >1MB
+    const validFiles = files.filter(f => (f.size || 0) <= 1024 * 1024);
+    if (files.length !== validFiles.length) {
+      alert('Beberapa file melebihi 1MB dan diabaikan. Batas per file: 1MB.');
+    }
+    // Store only the first for backward compatibility; we will send multiple below
+    setCurrentProduct(prev => ({ ...prev, imageFile: validFiles[0] || null, mainImagesFiles: validFiles }));
+  };
+
+  const handleAdditionalImagesChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    const valid = files.filter(f => (f.size || 0) <= 1024 * 1024);
+    if (files.length !== valid.length) {
+      alert('Sebagian gambar tambahan melebihi 1MB dan diabaikan.');
+    }
+    setAdditionalImagesFiles(valid);
+  };
+
+  const handleColorImageChange = (color, file) => {
+    if (file && (file.size || 0) > 1024 * 1024) {
+      alert('Gambar warna melebihi 1MB dan diabaikan.');
+      return;
+    }
+    setColorImagesFiles(prev => ({ ...prev, [color]: file }));
   };
 
   const addSizeFromInput = (e) => {
@@ -102,6 +136,31 @@ const AdminProducts = () => {
     }));
   };
 
+  const addColorFromInput = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = colorInput.trim();
+      if (!val) return;
+      setCurrentProduct(prev => ({
+        ...prev,
+        colors: Array.from(new Set([...(prev.colors || []), val]))
+      }));
+      setColorInput('');
+    }
+  };
+
+  const removeColor = (color) => {
+    setCurrentProduct(prev => ({
+      ...prev,
+      colors: (prev.colors || []).filter(c => c !== color)
+    }));
+    setColorImagesFiles(prev => {
+      const next = { ...prev };
+      delete next[color];
+      return next;
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -113,8 +172,19 @@ const AdminProducts = () => {
         fd.append('category', currentProduct.category);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
-        if (currentProduct.imageFile) fd.append('image', currentProduct.imageFile);
+        // stok dihapus dari form; jangan kirim
+        // main images: allow multiple; server will set pertama sebagai imageUrl
+        (currentProduct.mainImagesFiles || (currentProduct.imageFile ? [currentProduct.imageFile] : [])).forEach(f => fd.append('image', f));
         (currentProduct.sizes || []).forEach(s => fd.append('sizes[]', s));
+        (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
+        fd.append('sizesJson', JSON.stringify(currentProduct.sizes || []));
+        fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
+        // gallery additional images
+        additionalImagesFiles.forEach(f => fd.append('additionalImages', f));
+        // color-specific images using fieldname colorImages_<color>
+        Object.entries(colorImagesFiles).forEach(([color, file]) => {
+          if (file) fd.append(`colorImages_${color}`, file);
+        });
 
         const { data } = await productAPI.createProduct(fd);
         setProducts([...products, data]);
@@ -125,8 +195,16 @@ const AdminProducts = () => {
         fd.append('category', currentProduct.category);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
+        // stok dihapus dari form; jangan kirim
         (currentProduct.sizes || []).forEach(s => fd.append('sizes[]', s));
-        if (currentProduct.imageFile) fd.append('image', currentProduct.imageFile); // optional
+        (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
+        fd.append('sizesJson', JSON.stringify(currentProduct.sizes || []));
+        fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
+        (currentProduct.mainImagesFiles || (currentProduct.imageFile ? [currentProduct.imageFile] : [])).forEach(f => fd.append('image', f));
+        additionalImagesFiles.forEach(f => fd.append('additionalImages', f));
+        Object.entries(colorImagesFiles).forEach(([color, file]) => {
+          if (file) fd.append(`colorImages_${color}`, file);
+        });
 
         const { data } = await productAPI.updateProduct(currentProduct._id, fd);
         const updated = products.map(p => (p._id === currentProduct._id || p.id === currentProduct._id) ? data : p);
@@ -203,9 +281,14 @@ const AdminProducts = () => {
                           <Button 
                             variant="outline-danger" 
                             size="sm"
-                            onClick={() => {
-                              if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-                                setProducts(products.filter(p => (p._id || p.id) !== (product._id || product.id)));
+                            onClick={async () => {
+                              if (!window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
+                              try {
+                                const idToDelete = product._id || product.id;
+                                await productAPI.deleteProduct(idToDelete);
+                                setProducts(products.filter(p => (p._id || p.id) !== idToDelete));
+                              } catch (err) {
+                                alert('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
                               }
                             }}
                           >
@@ -291,16 +374,28 @@ const AdminProducts = () => {
             </Row>
 
             <Form.Group className="mb-3">
-              <Form.Label>Upload Gambar Produk</Form.Label>
+              <Form.Label>Upload Gambar Produk (bisa lebih dari 1)</Form.Label>
               <Form.Control 
                 type="file"
+                multiple
                 accept="image/*"
                 onChange={handleFileChange}
                 required={!isEditing}
               />
               <Form.Text className="text-muted">
-                Format: JPG, PNG, WEBP. Maks 5MB.
+                Format: JPG, PNG, WEBP. Maks 1MB per file.
               </Form.Text>
+            </Form.Group>
+
+            {/* Galeri tambahan */}
+            <Form.Group className="mb-3">
+              <Form.Label>Gambar Tambahan (opsional)</Form.Label>
+              <Form.Control 
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleAdditionalImagesChange}
+              />
             </Form.Group>
 
             {/* Ukuran Sepatu */}
@@ -326,6 +421,57 @@ const AdminProducts = () => {
                 ))}
               </div>
             </Form.Group>
+
+            {/* Warna dan gambar per warna */}
+            <Form.Group className="mb-3">
+              <Form.Label>Warna Produk</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Masukkan warna lalu tekan Enter, misal: Coklat"
+                value={colorInput}
+                onChange={(e) => setColorInput(e.target.value)}
+                onKeyDown={addColorFromInput}
+              />
+              <div className="mt-2 d-flex flex-wrap gap-2">
+                {(currentProduct.colors || []).map((c) => (
+                  <span key={c} className="badge bg-secondary">
+                    {c}
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-link text-white ms-2 p-0"
+                      onClick={() => removeColor(c)}
+                    >x</button>
+                  </span>
+                ))}
+              </div>
+            </Form.Group>
+
+            {(currentProduct.colors || []).map((c) => {
+              const localFile = colorImagesFiles[c];
+              const localPreview = localFile ? URL.createObjectURL(localFile) : null;
+              const existingPreview = isEditing && currentProduct.imagesByColor && currentProduct.imagesByColor[c]
+                ? resolveAssetUrl(currentProduct.imagesByColor[c])
+                : null;
+              const previewSrc = localPreview || existingPreview || null;
+              return (
+                <Form.Group className="mb-3" key={`color-${c}`}>
+                  <Form.Label>Gambar untuk warna: {c}</Form.Label>
+                  <div className="d-flex align-items-center gap-3">
+                    <Form.Control
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleColorImageChange(c, e.target.files?.[0] || null)}
+                    />
+                    {previewSrc && (
+                      <img src={previewSrc} alt={`preview-${c}`} style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }} />
+                    )}
+                  </div>
+                  <Form.Text className="text-muted">Maks 1MB per file.</Form.Text>
+                </Form.Group>
+              );
+            })}
+
+            {/* Stok dihapus sesuai permintaan */}
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>

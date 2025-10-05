@@ -1,4 +1,4 @@
-﻿const Product = require('../models/productModel');
+const Product = require('../models/productModel');
 const path = require('path');
 const fs = require('fs');
 
@@ -109,10 +109,18 @@ exports.getProduct = async (req, res) => {
 // @access  Private (Admin)
 exports.createProduct = async (req, res) => {
   try {
-    // Add image URL if file is uploaded
-    if (req.file) {
-      req.body.imageUrl = `/uploads/${req.file.filename}`;
-    }
+    // URL gambar utama, tambahan, dan per warna sudah dinormalisasi di middleware
+    // Normalisasi field array dan angka
+    try {
+      if (req.body.sizesJson) {
+        req.body.sizes = JSON.parse(req.body.sizesJson);
+      }
+      if (req.body.colorsJson) {
+        req.body.colors = JSON.parse(req.body.colorsJson);
+      }
+    } catch (_) {}
+    if (typeof req.body.price === 'string') req.body.price = Number(req.body.price);
+    if (typeof req.body.stock === 'string') req.body.stock = Number(req.body.stock);
 
     // Auto-generate product code if missing
     const generateProductCode = async () => {
@@ -158,20 +166,24 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    // Add image URL if file is uploaded
-    if (req.file) {
-      // Delete old image if exists
-      if (product.imageUrl && product.imageUrl.startsWith('/uploads/')) {
-        const oldImagePath = path.join(
-          __dirname,
-          '../..',
-          product.imageUrl
-        );
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
+    // Normalisasi field array dan angka
+    try {
+      if (req.body.sizesJson) {
+        req.body.sizes = JSON.parse(req.body.sizesJson);
       }
-      req.body.imageUrl = `/uploads/${req.file.filename}`;
+      if (req.body.colorsJson) {
+        req.body.colors = JSON.parse(req.body.colorsJson);
+      }
+    } catch (_) {}
+    if (typeof req.body.price === 'string') req.body.price = Number(req.body.price);
+    if (typeof req.body.stock === 'string') req.body.stock = Number(req.body.stock);
+
+    // Jika ada gambar utama baru (di-set oleh middleware), hapus gambar lama
+    if (req.body.imageUrl && product.imageUrl && product.imageUrl.startsWith('/uploads/')) {
+      const oldImagePath = path.join(__dirname, '../..', product.imageUrl);
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
     }
 
     product = await Product.findByIdAndUpdate(req.params.id, req.body, {
