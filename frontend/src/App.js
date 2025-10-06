@@ -30,7 +30,7 @@ function App() {
     }}>
       <div className="App">
         {!hideHeader && <Header />}
-        <main>
+        <main className={location.pathname.startsWith('/admin') ? '' : 'public-gray'}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/category/:gender" element={<CategoryPage />} />

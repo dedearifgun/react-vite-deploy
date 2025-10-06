@@ -4,13 +4,20 @@
   flex-direction: column;
 }
 
-/* ====== Global Fonts ====== */
+/* ====== Global Fonts (Tailwind default sans-serif stack) ====== */
 body {
-  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+               "Liberation Sans", sans-serif, "Apple Color Emoji",
+               "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-h1, h2, h3, h4, h5, h6, .display-1, .display-2, .display-3, .display-4 {
-  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+h1, h2, h3, h4, h5, h6,
+.display-1, .display-2, .display-3, .display-4 {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+               "Liberation Sans", sans-serif, "Apple Color Emoji",
+               "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-weight: 700;
   letter-spacing: 0.2px;
 }
@@ -127,9 +134,32 @@ body .navbar.navbar-transparent {
   margin-bottom: 24px;
 }
 
+/* CTA di hero: selalu putih */
+.hero-section .cta-btn {
+  background: #ffffff !important;
+  color: #111827 !important; /* gray-900 */
+  border: 1px solid #e5e7eb !important; /* gray-200 */
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 600;
+  margin-right: 0; /* jarak dikontrol oleh gap di container */
+}
+.hero-section .cta-btn:hover,
+.hero-section .cta-btn:focus {
+  background: #f3f4f6 !important; /* gray-100 */
+  color: #111827 !important;
+  border-color: #e5e7eb !important;
+}
+
 /* Pastikan tidak ada padding top pada container pertama di hero */
 .hero-section > .container {
   padding-top: 0 !important;
+}
+
+/* Kurangi jarak antar tombol CTA */
+.hero-cta {
+  display: flex;
+  gap: 8px; /* lebih rapat */
 }
 
 .category-section {
@@ -140,10 +170,184 @@ body .navbar.navbar-transparent {
   padding: 40px 0;
 }
 
-.product-card img {
-  height: 200px;
+.pc-img-wrapper img {
+  height: 240px; /* gambar utama sedikit lebih besar */
   object-fit: cover;
+  transition: transform 0.2s ease; /* efek hover halus */
 }
+.product-card:hover .pc-img-wrapper img { transform: scale(1.01); } /* perkecil banget */
+
+/* ProductCard hover overlay */
+.pc-img-wrapper { position: relative; }
+.pc-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 10px;
+  color: #ffffff;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.product-card:hover .pc-overlay { opacity: 1; }
+.pc-overlay-top { display: flex; align-items: center; justify-content: space-between; }
+.pc-title { font-weight: 600; }
+.pc-price { font-weight: 600; }
+.pc-overlay-bottom { font-size: 0.9rem; color: rgba(255,255,255,0.85); }
+
+/* ProductCard color thumbnails */
+.product-card-link { color: inherit; }
+.pc-color-row {
+  display: none; /* disembunyikan default */
+  align-items: center;
+  gap: 4px; /* kotaknya tampak lebih rapat */
+  padding: 2px 4px; /* baris lebih kecil */
+}
+.product-card:hover .pc-color-row { display: flex; }
+.pc-img-wrapper:hover + .pc-color-row { display: flex; }
+.pc-color-thumb {
+  width: 84px; /* 2x lebih besar */
+  height: 84px;
+  display: inline-block;
+  overflow: hidden;
+  object-fit: cover;
+  border-radius: 0; /* kotak, tanpa lengkung */
+  border: 1px solid #d1d5db;
+}
+.pc-color-thumb:hover { box-shadow: none; }
+.pc-color-thumb.active { outline: 2px solid #111827; outline-offset: 1px; }
+
+/* Harga inline di samping judul */
+.pc-price-inline {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #111827;
+  white-space: nowrap;
+}
+
+/* New Arrivals grid (mirip templat yang diminta) */
+.new-arrivals-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.na-item {
+  width: 14rem; /* ~w-56 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.na-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+.na-img {
+  width: 100%;
+  height: 18rem; /* ~h-72 */
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0.5rem;
+}
+.na-title {
+  font-size: 0.9rem; /* ~text-sm */
+  margin-top: 0.5rem;
+  color: #1f2937; /* slate-800 */
+}
+.na-price {
+  font-size: 1.25rem; /* ~text-xl */
+  color: #0f172a; /* slate-900 */
+}
+
+/* Latest Creations overlay style */
+.latest-creations-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  max-width: 64rem; /* ~max-w-5xl */
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 3rem; /* ~mt-12 */
+}
+.lc-item {
+  position: relative;
+  border-radius: 0.5rem; /* rounded-lg */
+  overflow: hidden;
+}
+.lc-img {
+  width: 14rem; /* size-56 width */
+  height: 14rem; /* size-56 height */
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.lc-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1rem; /* p-4 */
+  color: #ffffff;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.lc-item:hover .lc-overlay { opacity: 1; }
+.lc-title {
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 500; /* font-medium */
+  margin: 0 0 0.25rem 0;
+}
+.lc-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem; /* text-sm */
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+}
+.lc-more:hover { color: #ffffff; }
+.lc-icon { display: inline-block; }
+
+/* Sidebar Category Filters */
+.filter-sidebar {
+  border-top: 1px solid #e5e7eb;
+}
+.filter-section { border-bottom: 1px solid #e5e7eb; }
+.filter-header {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px;
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+  color: #111827;
+}
+.filter-header-title { font-weight: 600; text-transform: uppercase; }
+.filter-header-icon { font-size: 20px; color: #6b7280; }
+.filter-group { padding: 8px 0 12px 0; }
+.filter-group-title { color: #6b7280; margin: 6px 0 6px 4px; font-size: 0.875rem; }
+.filter-list { list-style: none; padding: 0; margin: 0; }
+.filter-item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 8px 8px;
+  border-radius: 4px;
+  color: #111827;
+  font-size: 0.9rem;
+}
+.filter-item:hover { background: #f3f4f6; }
+.filter-item.active { background: #f3f4f6; font-weight: 600; }
+.filter-item.inactive { color: #9ca3af; cursor: not-allowed; }
 
 .admin-layout {
   display: flex;
@@ -162,6 +366,16 @@ body .navbar.navbar-transparent {
   padding: 20px;
 }
 
+/* Deskripsi produk: bullet dot untuk setiap baris */
+.product-desc-list {
+  list-style: disc;
+  padding-left: 1.25rem; /* 20px */
+  margin: 0;
+}
+.product-desc-list li {
+  margin-bottom: 6px;
+}
+
 /* Font admin agar konsisten seperti sidebar (Inter) */
 .admin-content,
 .admin-content h1,
@@ -174,7 +388,10 @@ body .navbar.navbar-transparent {
 .admin-content .table,
 .admin-content .form-label,
 .admin-content .form-control {
-  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+               "Liberation Sans", sans-serif, "Apple Color Emoji",
+               "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
 }
 
 /* Header admin dengan garis konsisten */
@@ -285,6 +502,20 @@ body .navbar.navbar-transparent {
   color: #333;
 }
 
+/* Paksa putih untuk rute tertentu (kategori, sejarah, toko) */
+.text-navbar.force-white {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.text-navbar.force-white .text-navbar__brand,
+.text-navbar.force-white .text-nav-link {
+  color: #fff !important;
+}
+.text-navbar.force-white .text-nav-link:hover,
+.text-navbar.force-white .text-nav-link.active {
+  color: #fff !important;
+}
+
 /* ====== Testimonials Marquee ====== */
 .testimonials-marquee {
   background: rgba(0,0,0,0.75);
@@ -354,6 +585,71 @@ body .navbar.navbar-transparent {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+.btn-buy-now {
+  display: inline-block;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 4px;
+  background: #6b7280; /* gray-500 */
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.btn-buy-now:hover,
+.btn-buy-now:focus {
+  background: #4b5563; /* gray-600 */
+  color: #fff;
+}
+
+/* ===== Monochrome button theme for public pages (exclude admin) ===== */
+.public-gray .btn-primary,
+.public-gray .btn-success,
+.public-gray .btn-danger,
+.public-gray .btn-warning,
+.public-gray .btn-info,
+.public-gray .btn-dark,
+.public-gray .btn-secondary {
+  background-color: #6b7280; /* gray-500 */
+  border-color: #6b7280;
+  color: #fff;
+}
+.public-gray .btn-primary:hover,
+.public-gray .btn-success:hover,
+.public-gray .btn-danger:hover,
+.public-gray .btn-warning:hover,
+.public-gray .btn-info:hover,
+.public-gray .btn-dark:hover,
+.public-gray .btn-secondary:hover {
+  background-color: #4b5563; /* gray-600 */
+  border-color: #4b5563;
+  color: #fff;
+}
+
+.public-gray .btn-outline-primary,
+.public-gray .btn-outline-success,
+.public-gray .btn-outline-danger,
+.public-gray .btn-outline-warning,
+.public-gray .btn-outline-info,
+.public-gray .btn-outline-dark,
+.public-gray .btn-outline-secondary {
+  color: #111827; /* gray-900 */
+  border-color: #d1d5db; /* gray-300 */
+  background-color: transparent;
+}
+.public-gray .btn-outline-primary:hover,
+.public-gray .btn-outline-success:hover,
+.public-gray .btn-outline-danger:hover,
+.public-gray .btn-outline-warning:hover,
+.public-gray .btn-outline-info:hover,
+.public-gray .btn-outline-dark:hover,
+.public-gray .btn-outline-secondary:hover {
+  background-color: #e5e7eb; /* gray-200 */
+  color: #111827;
+  border-color: #d1d5db;
+}
+.text-gray-600 { color: #4b5563; }
+.text-gray-500 { color: rgba(107,114,128,0.7); }
 .confirm-overlay {
   position: fixed;
   inset: 0;
@@ -439,7 +735,7 @@ body .navbar.navbar-transparent {
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 24px 0; /* diperkecil dari 64px */
+  padding: 16px 0; /* diperkecil lagi */
   background: #f8fafc; /* slate-50 */
   font-size: 12px; /* lebih kecil */
   color: rgba(31, 41, 55, 0.7); /* gray-800/70 */
@@ -497,16 +793,16 @@ body .navbar.navbar-transparent {
 .footer-socials {
   display: flex;
   align-items: center;
-  gap: 16px; /* gap-4 */
-  color: #6366F1; /* indigo-500 */
+  gap: 12px; /* lebih rapat */
+  color: #6b7280; /* gray-500 */
 }
 
 .social-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 28px; /* lebih kecil */
+  height: 28px; /* lebih kecil */
   border-radius: 6px;
   transition: transform 0.3s ease;
 }

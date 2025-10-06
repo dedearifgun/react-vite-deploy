@@ -5,23 +5,24 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const forceWhite = ['/category', '/sejarah', '/toko'].some((p) => location.pathname.startsWith(p));
+  const onHome = location.pathname === '/';
 
   useEffect(() => {
-    if (forceWhite) {
+    // Di semua halaman selain home/hero, navbar harus putih dengan teks hitam
+    if (!onHome) {
       setScrolled(true);
-      return; // Tidak perlu listener, selalu putih
+      return;
     }
-    const onScroll = () => {
+    const onScrollHandler = () => {
       setScrolled(window.scrollY > 50);
     };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [forceWhite]);
+    onScrollHandler();
+    window.addEventListener('scroll', onScrollHandler, { passive: true });
+    return () => window.removeEventListener('scroll', onScrollHandler);
+  }, [onHome]);
 
   return (
-    <div className={`text-navbar fixed-top ${(scrolled || forceWhite) ? 'scrolled' : ''}`}>
+    <div className={`text-navbar fixed-top ${scrolled ? 'scrolled' : ''}`}>
       <div className="text-navbar__inner">
         <nav className="text-navbar__left">
           <NavLink to="/category/pria" className="text-nav-link">PRIA</NavLink>

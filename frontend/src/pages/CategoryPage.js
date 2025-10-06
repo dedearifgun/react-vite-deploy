@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+import CategoryFilters from '../components/CategoryFilters';
 import { productAPI, categoryAPI } from '../utils/api';
 
 const CategoryPage = () => {
@@ -45,13 +46,9 @@ const CategoryPage = () => {
     fetchData();
   }, [gender, category]);
 
-  const handleCategoryChange = (e) => {
-    const selectedValue = e.target.value;
-    setSelectedCategory(selectedValue);
-
-    const target = selectedValue === 'all'
-      ? `/category/${gender}/all`
-      : `/category/${gender}/${selectedValue}`;
+  const handleSelectCategory = (slug) => {
+    setSelectedCategory(slug);
+    const target = slug === 'all' ? `/category/${gender}/all` : `/category/${gender}/${slug}`;
     window.location.href = target;
   };
 
@@ -62,43 +59,42 @@ const CategoryPage = () => {
       <h1 className="mb-4">Koleksi {genderTitle}</h1>
 
       <Row className="mb-4">
-        <Col md={4}>
-          <Form.Group>
-            <Form.Label>Filter Kategori</Form.Label>
-            <Form.Select value={selectedCategory} onChange={handleCategoryChange}>
-              <option value="all">Semua Kategori</option>
-              {categories.map(cat => (
-                <option key={cat._id || cat.id} value={cat.slug}>{cat.name}</option>
-              ))}
-            </Form.Select>
-          </Form.Group>
+        <Col lg={3} md={4} className="mb-3 mb-md-0">
+          <CategoryFilters
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleSelectCategory}
+            genderTitle={genderTitle}
+          />
+        </Col>
+        <Col lg={9} md={8}>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          ) : (
+            <Row>
+              {products.length > 0 ? (
+                products.map(product => (
+                  <Col key={product._id || product.id} lg={4} md={6} sm={6} className="mb-4">
+                    <ProductCard product={product} />
+                  </Col>
+                ))
+              ) : (
+                <Col>
+                  <div className="text-center py-5">
+                    <h4>Tidak ada produk yang ditemukan</h4>
+                    <p>Silakan coba kategori lain atau kembali ke halaman utama</p>
+                  </div>
+                </Col>
+              )}
+            </Row>
+          )}
         </Col>
       </Row>
-
-      {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
-      ) : (
-        <Row>
-          {products.length > 0 ? (
-            products.map(product => (
-              <Col key={product._id || product.id} lg={3} md={4} sm={6} className="mb-4">
-                <ProductCard product={product} />
-              </Col>
-            ))
-          ) : (
-            <Col>
-              <div className="text-center py-5">
-                <h4>Tidak ada produk yang ditemukan</h4>
-                <p>Silakan coba kategori lain atau kembali ke halaman utama</p>
-              </div>
-            </Col>
-          )}
-        </Row>
-      )}
+      
     </Container>
   );
 };

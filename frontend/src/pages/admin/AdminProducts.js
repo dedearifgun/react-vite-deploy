@@ -19,6 +19,7 @@ const AdminProducts = () => {
   const [currentProduct, setCurrentProduct] = useState({
     _id: '',
     name: '',
+    description: '',
     category: '', // category id
     gender: 'pria',
     price: '',
@@ -52,7 +53,7 @@ const AdminProducts = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setCurrentProduct({ _id: '', name: '', category: '', gender: 'pria', price: '', imageFile: null, sizes: [], colors: [], stock: 7, mainImagesFiles: [] });
+    setCurrentProduct({ _id: '', name: '', description: '', category: '', gender: 'pria', price: '', imageFile: null, sizes: [], colors: [], stock: 7, mainImagesFiles: [] });
     setSizeInput('');
     setColorInput('');
     setColorImagesFiles({});
@@ -65,6 +66,7 @@ const AdminProducts = () => {
       setCurrentProduct({
         _id: product._id || product.id,
         name: product.name || '',
+        description: product.description || '',
         category: typeof product.category === 'object' ? product.category?._id : product.category || '',
         gender: product.gender || 'pria',
         price: product.price || '',
@@ -155,6 +157,7 @@ const AdminProducts = () => {
       if (!isEditing) {
         const fd = new FormData();
         fd.append('name', currentProduct.name);
+        fd.append('description', currentProduct.description || '');
         fd.append('category', currentProduct.category);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
@@ -178,6 +181,7 @@ const AdminProducts = () => {
       } else {
         const fd = new FormData();
         fd.append('name', currentProduct.name);
+        fd.append('description', currentProduct.description || '');
         fd.append('category', currentProduct.category);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
@@ -325,6 +329,18 @@ const AdminProducts = () => {
                 </Form.Group>
               </Col>
             </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Deskripsi Produk</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="description"
+                value={currentProduct.description}
+                onChange={handleInputChange}
+                placeholder="Tuliskan deskripsi singkat produk"
+              />
+            </Form.Group>
 
             <Row>
               <Col md={6}>
