@@ -40,7 +40,7 @@ const fileFilter = (req, file, cb) => {
 // Initialize upload
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 1024 * 1024 }, // 1MB per image
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB per image
   fileFilter: fileFilter
 });
 
@@ -68,7 +68,7 @@ exports.uploadProductImages = (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: err.message.includes('File too large')
-          ? 'Ukuran gambar maksimal 1MB per file'
+          ? 'Ukuran gambar maksimal 20MB per file'
           : err.message
       });
     }

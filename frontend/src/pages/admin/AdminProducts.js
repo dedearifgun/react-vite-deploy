@@ -6,6 +6,10 @@ import { productAPI, categoryAPI } from '../../utils/api';
 import { resolveAssetUrl } from '../../utils/assets';
 
 const AdminProducts = () => {
+  const currentUser = (() => {
+    try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
+  })();
+  const isAdmin = currentUser?.role === 'admin';
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +28,6 @@ const AdminProducts = () => {
     stock: 7
   });
   const [colorImagesFiles, setColorImagesFiles] = useState({});
-  const [additionalImagesFiles, setAdditionalImagesFiles] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
 
@@ -53,7 +56,7 @@ const AdminProducts = () => {
     setSizeInput('');
     setColorInput('');
     setColorImagesFiles({});
-    setAdditionalImagesFiles([]);
+    // hapus gambar tambahan (tidak digunakan lagi)
     setIsEditing(false);
   };
 
@@ -88,25 +91,18 @@ const AdminProducts = () => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
-    const valid = files.filter(f => (f.size || 0) <= 1024 * 1024);
+    const valid = files.filter(f => (f.size || 0) <= 20 * 1024 * 1024);
     if (files.length !== valid.length) {
-      alert('Sebagian gambar utama melebihi 1MB dan diabaikan.');
+      alert('Sebagian gambar utama melebihi 20MB dan diabaikan.');
     }
     setCurrentProduct(prev => ({ ...prev, mainImagesFiles: valid, imageFile: valid[0] || null }));
   };
 
-  const handleAdditionalImagesChange = (e) => {
-    const files = Array.from(e.target.files || []);
-    const valid = files.filter(f => (f.size || 0) <= 1024 * 1024);
-    if (files.length !== valid.length) {
-      alert('Sebagian gambar tambahan melebihi 1MB dan diabaikan.');
-    }
-    setAdditionalImagesFiles(valid);
-  };
+  // gambar tambahan dihapus sesuai permintaan; tidak ada handler
 
   const handleColorImageChange = (color, file) => {
-    if (file && (file.size || 0) > 1024 * 1024) {
-      alert('Gambar warna melebihi 1MB dan diabaikan.');
+    if (file && (file.size || 0) > 20 * 1024 * 1024) {
+      alert('Gambar warna melebihi 20MB dan diabaikan.');
       return;
     }
     setColorImagesFiles(prev => ({ ...prev, [color]: file }));
@@ -170,8 +166,7 @@ const AdminProducts = () => {
         (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
         fd.append('sizesJson', JSON.stringify(currentProduct.sizes || []));
         fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
-        // gallery additional images
-        additionalImagesFiles.forEach(f => fd.append('additionalImages', f));
+        // tidak kirim additionalImages; server akan menggabungkan sisa gambar utama ke additionalImages
         // color-specific images using fieldname colorImages_<color>
         Object.entries(colorImagesFiles).forEach(([color, file]) => {
           if (file) fd.append(`colorImages_${color}`, file);
@@ -193,7 +188,7 @@ const AdminProducts = () => {
         fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
         (currentProduct.mainImagesFiles || (currentProduct.imageFile ? [currentProduct.imageFile] : []))
           .forEach(f => fd.append('image', f));
-        additionalImagesFiles.forEach(f => fd.append('additionalImages', f));
+        // tidak kirim additionalImages; server akan menggabungkan sisa gambar utama ke additionalImages
         Object.entries(colorImagesFiles).forEach(([color, file]) => {
           if (file) fd.append(`colorImages_${color}`, file);
         });
@@ -222,7 +217,7 @@ const AdminProducts = () => {
       <div className="admin-content">
         <Container fluid>
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2>Manajemen Produk</h2>
+            <h2 className="admin-title">Manajemen Produk</h2>
             <Button variant="primary" onClick={() => handleShowModal()}>
               <i className="fas fa-plus me-2"></i> Tambah Produk
             </Button>
@@ -273,13 +268,15 @@ const AdminProducts = () => {
                           >
                             <i className="fas fa-edit"></i>
                           </Button>
-                          <Button 
-                            variant="outline-danger" 
-                            size="sm"
-                            onClick={() => setConfirmDelete({ show: true, id: product._id || product.id })}
-                          >
-                            <i className="fas fa-trash"></i>
-                          </Button>
+                          {isAdmin && (
+                            <Button 
+                              variant="outline-danger" 
+                              size="sm"
+                              onClick={() => setConfirmDelete({ show: true, id: product._id || product.id })}
+                            >
+                              <i className="fas fa-trash"></i>
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -369,20 +366,11 @@ const AdminProducts = () => {
                 required={!isEditing}
               />
               <Form.Text className="text-muted">
-                Format: JPG, PNG, WEBP. Maks 1MB per file.
+                Format: JPG, PNG, WEBP. Maks 20MB per file.
               </Form.Text>
             </Form.Group>
 
-            {/* Galeri tambahan */}
-            <Form.Group className="mb-3">
-              <Form.Label>Gambar Tambahan (opsional)</Form.Label>
-              <Form.Control 
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleAdditionalImagesChange}
-              />
-            </Form.Group>
+            {/* Gambar tambahan dihapus sesuai permintaan */}
 
             {/* Warna Produk */}
             <Form.Group className="mb-3">
@@ -428,7 +416,7 @@ const AdminProducts = () => {
                       <img src={previewSrc} alt={`preview-${c}`} style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }} />
                     )}
                   </div>
-                  <Form.Text className="text-muted">Maks 1MB per file.</Form.Text>
+                  <Form.Text className="text-muted">Maks 20MB per file.</Form.Text>
                 </Form.Group>
               );
             })}
@@ -471,24 +459,26 @@ const AdminProducts = () => {
       </Modal>
 
       {/* Dialog Konfirmasi Hapus Produk */}
-      <ConfirmDialog
-        show={confirmDelete.show}
-        title="Are you sure?"
-        message={"Do you really want to delete this product? This action cannot be undone."}
-        onCancel={() => setConfirmDelete({ show: false, id: null })}
-        onConfirm={async () => {
-          try {
-            const idToDelete = confirmDelete.id;
-            if (!idToDelete) return;
-            await productAPI.deleteProduct(idToDelete);
-            setProducts(products.filter(p => (p._id || p.id) !== idToDelete));
-          } catch (err) {
-            alert('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
-          } finally {
-            setConfirmDelete({ show: false, id: null });
-          }
-        }}
-      />
+      {isAdmin && (
+        <ConfirmDialog
+          show={confirmDelete.show}
+          title="Are you sure?"
+          message={"Do you really want to delete this product? This action cannot be undone."}
+          onCancel={() => setConfirmDelete({ show: false, id: null })}
+          onConfirm={async () => {
+            try {
+              const idToDelete = confirmDelete.id;
+              if (!idToDelete) return;
+              await productAPI.deleteProduct(idToDelete);
+              setProducts(products.filter(p => (p._id || p.id) !== idToDelete));
+            } catch (err) {
+              alert('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
+            } finally {
+              setConfirmDelete({ show: false, id: null });
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -12,7 +12,6 @@ const AdminProducts = () => {
   const [sizeInput, setSizeInput] = useState('');
   const [colorInput, setColorInput] = useState('');
   const [colorImagesFiles, setColorImagesFiles] = useState({});
-  const [additionalImagesFiles, setAdditionalImagesFiles] = useState([]);
   const [currentProduct, setCurrentProduct] = useState({
     _id: '',
     name: '',
@@ -55,7 +54,7 @@ const AdminProducts = () => {
     setSizeInput('');
     setColorInput('');
     setColorImagesFiles({});
-    setAdditionalImagesFiles([]);
+    // gambar tambahan dihapus; tidak digunakan lagi
     setIsEditing(false);
   };
 
@@ -90,27 +89,20 @@ const AdminProducts = () => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
-    // Client-side 1MB validation: ignore files >1MB
-    const validFiles = files.filter(f => (f.size || 0) <= 1024 * 1024);
+    // Client-side 20MB validation: ignore files >20MB
+    const validFiles = files.filter(f => (f.size || 0) <= 20 * 1024 * 1024);
     if (files.length !== validFiles.length) {
-      alert('Beberapa file melebihi 1MB dan diabaikan. Batas per file: 1MB.');
+      alert('Beberapa file melebihi 20MB dan diabaikan. Batas per file: 20MB.');
     }
     // Store only the first for backward compatibility; we will send multiple below
     setCurrentProduct(prev => ({ ...prev, imageFile: validFiles[0] || null, mainImagesFiles: validFiles }));
   };
 
-  const handleAdditionalImagesChange = (e) => {
-    const files = Array.from(e.target.files || []);
-    const valid = files.filter(f => (f.size || 0) <= 1024 * 1024);
-    if (files.length !== valid.length) {
-      alert('Sebagian gambar tambahan melebihi 1MB dan diabaikan.');
-    }
-    setAdditionalImagesFiles(valid);
-  };
+  // gambar tambahan dihapus; tidak ada handler
 
   const handleColorImageChange = (color, file) => {
-    if (file && (file.size || 0) > 1024 * 1024) {
-      alert('Gambar warna melebihi 1MB dan diabaikan.');
+    if (file && (file.size || 0) > 20 * 1024 * 1024) {
+      alert('Gambar warna melebihi 20MB dan diabaikan.');
       return;
     }
     setColorImagesFiles(prev => ({ ...prev, [color]: file }));
@@ -179,8 +171,7 @@ const AdminProducts = () => {
         (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
         fd.append('sizesJson', JSON.stringify(currentProduct.sizes || []));
         fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
-        // gallery additional images
-        additionalImagesFiles.forEach(f => fd.append('additionalImages', f));
+        // tidak kirim additionalImages; server akan menggabungkan sisa gambar utama ke additionalImages
         // color-specific images using fieldname colorImages_<color>
         Object.entries(colorImagesFiles).forEach(([color, file]) => {
           if (file) fd.append(`colorImages_${color}`, file);
@@ -201,7 +192,7 @@ const AdminProducts = () => {
         fd.append('sizesJson', JSON.stringify(currentProduct.sizes || []));
         fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
         (currentProduct.mainImagesFiles || (currentProduct.imageFile ? [currentProduct.imageFile] : [])).forEach(f => fd.append('image', f));
-        additionalImagesFiles.forEach(f => fd.append('additionalImages', f));
+        // tidak kirim additionalImages; server akan menggabungkan sisa gambar utama ke additionalImages
         Object.entries(colorImagesFiles).forEach(([color, file]) => {
           if (file) fd.append(`colorImages_${color}`, file);
         });
@@ -383,24 +374,15 @@ const AdminProducts = () => {
                 required={!isEditing}
               />
               <Form.Text className="text-muted">
-                Format: JPG, PNG, WEBP. Maks 1MB per file.
+                Format: JPG, PNG, WEBP. Maks 20MB per file.
               </Form.Text>
             </Form.Group>
 
-            {/* Galeri tambahan */}
-            <Form.Group className="mb-3">
-              <Form.Label>Gambar Tambahan (opsional)</Form.Label>
-              <Form.Control 
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleAdditionalImagesChange}
-              />
-            </Form.Group>
+            {/* Gambar tambahan dihapus sesuai permintaan */}
 
             {/* Ukuran Sepatu */}
             <Form.Group className="mb-3">
-              <Form.Label>Ukuran Sepatu</Form.Label>
+              <Form.Label>Ukuran Nomor</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Masukkan ukuran lalu tekan Enter, misal: 23"
@@ -466,7 +448,7 @@ const AdminProducts = () => {
                       <img src={previewSrc} alt={`preview-${c}`} style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }} />
                     )}
                   </div>
-                  <Form.Text className="text-muted">Maks 1MB per file.</Form.Text>
+                  <Form.Text className="text-muted">Maks 20MB per file.</Form.Text>
                 </Form.Group>
               );
             })}

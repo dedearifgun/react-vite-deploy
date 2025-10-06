@@ -162,6 +162,29 @@ body .navbar.navbar-transparent {
   padding: 20px;
 }
 
+/* Font admin agar konsisten seperti sidebar (Inter) */
+.admin-content,
+.admin-content h1,
+.admin-content h2,
+.admin-content h3,
+.admin-content h4,
+.admin-content h5,
+.admin-content h6,
+.admin-content .btn,
+.admin-content .table,
+.admin-content .form-label,
+.admin-content .form-control {
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+}
+
+/* Header admin dengan garis konsisten */
+.admin-title {
+  font-weight: 600;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
 .admin-sidebar .nav-link {
   color: rgba(255, 255, 255, 0.75);
   padding: 10px 20px;
@@ -421,6 +444,55 @@ body .navbar.navbar-transparent {
   font-size: 12px; /* lebih kecil */
   color: rgba(31, 41, 55, 0.7); /* gray-800/70 */
 }
+
+/* ===== Success Toast (match confirm dialog aesthetic) ===== */
+.success-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+  border-radius: 12px;
+  padding: 16px 16px 18px;
+  width: 300px;
+  border: 1px solid #e5e7eb;
+}
+
+.success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: #dcfce7; /* green-100 */
+  border-radius: 9999px;
+  margin-bottom: 8px;
+}
+
+.success-title {
+  color: #111827; /* gray-900 */
+  font-weight: 600;
+  font-size: 18px;
+  margin: 4px 0 0;
+}
+
+.success-message {
+  color: #4b5563; /* gray-600 */
+  font-size: 13px;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.success-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  border: none;
+  background: transparent;
+  color: #6b7280; /* gray-500 */
+  cursor: pointer;
+}
+.success-close:hover { color: #111827; }
 
 .footer-socials {
   display: flex;

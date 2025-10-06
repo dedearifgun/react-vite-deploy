@@ -14,12 +14,12 @@ const router = express.Router();
 router
   .route('/')
   .get(getProducts)
-  .post(protect, authorize('admin'), uploadProductImages, createProduct);
+  .post(protect, authorize('admin', 'user'), uploadProductImages, createProduct);
 
 router
   .route('/:id')
   .get(getProduct)
-  .put(protect, authorize('admin'), uploadProductImages, updateProduct)
+  .put(protect, authorize('admin', 'user'), uploadProductImages, updateProduct)
   .delete(protect, authorize('admin'), deleteProduct);
 
 module.exports = router;

@@ -15,14 +15,14 @@ const router = express.Router();
 router
   .route('/')
   .get(getCategories)
-  .post(protect, authorize('admin'), uploadCategoryImage, createCategory);
+  .post(protect, authorize('admin', 'user'), uploadCategoryImage, createCategory);
 
-router.put('/reorder', protect, authorize('admin'), reorderCategories);
+router.put('/reorder', protect, authorize('admin', 'user'), reorderCategories);
 
 router
   .route('/:id')
   .get(getCategory)
-  .put(protect, authorize('admin'), uploadCategoryImage, updateCategory)
+  .put(protect, authorize('admin', 'user'), uploadCategoryImage, updateCategory)
   .delete(protect, authorize('admin'), deleteCategory);
 
 module.exports = router;

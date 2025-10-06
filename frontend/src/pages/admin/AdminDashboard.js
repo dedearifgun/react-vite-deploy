@@ -48,7 +48,7 @@ const AdminDashboard = () => {
       <AdminSidebar />
       <div className="admin-content">
         <Container fluid>
-          <h2 className="mb-4">Dashboard</h2>
+          <h2 className="admin-title">Dashboard</h2>
           
           <Row>
             <Col md={6}>

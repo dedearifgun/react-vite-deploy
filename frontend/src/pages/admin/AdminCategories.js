@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaTimes } from 'react-icons/fa';
 import AdminSidebar from '../../components/AdminSidebar';
 import { categoryAPI } from '../../utils/api';
+import SuccessToast from '../../components/SuccessToast';
 
 const AdminCategories = () => {
+  const currentUser = (() => {
+    try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
+  })();
+  const isAdmin = currentUser?.role === 'admin';
   // State kategori
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +18,13 @@ const AdminCategories = () => {
   const [modalTitle, setModalTitle] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [subInput, setSubInput] = useState('');
+  // Toast state
+  const [toast, setToast] = useState({ show: false, title: '', message: '' });
+  const showToast = (title, message) => {
+    setToast({ show: true, title, message });
+    // Auto hide after 3s
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
 
   // State form
   const [formData, setFormData] = useState({
@@ -104,7 +116,7 @@ const AdminCategories = () => {
         });
         const updated = categories.map(c => c._id === selectedCategory._id ? data : c);
         setCategories(updated);
-        alert('Kategori berhasil diperbarui!');
+        showToast('Berhasil!', 'Kategori berhasil diperbarui!');
       } else {
         const { data } = await categoryAPI.createCategory({
           name: formData.name,
@@ -112,11 +124,11 @@ const AdminCategories = () => {
           subcategories: formData.subcategories || []
         });
         setCategories([...categories, data]);
-        alert('Kategori baru berhasil ditambahkan!');
+        showToast('Berhasil!', 'Kategori baru berhasil ditambahkan!');
       }
       setShowModal(false);
     } catch (err) {
-      alert('Gagal menyimpan kategori: ' + (err?.response?.data?.message || err.message));
+      showToast('Gagal', 'Gagal menyimpan kategori: ' + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -145,21 +157,22 @@ const AdminCategories = () => {
       const res = await categoryAPI.reorderCategories(orders);
       if (res.data?.success) {
         setCategories(res.data.data || categories);
-        alert('Urutan kategori berhasil disimpan');
+        showToast('Berhasil!', 'Urutan kategori berhasil disimpan');
       } else {
-        alert('Gagal menyimpan urutan');
+        showToast('Gagal', 'Gagal menyimpan urutan');
       }
     } catch (err) {
-      alert('Gagal menyimpan urutan: ' + (err?.response?.data?.message || err.message));
+      showToast('Gagal', 'Gagal menyimpan urutan: ' + (err?.response?.data?.message || err.message));
     }
   };
 
   return (
-    <div className="d-flex">
+    <div className="admin-layout">
       <AdminSidebar />
-      <Container fluid className="py-4 px-4 flex-grow-1">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2>Manajemen Kategori</h2>
+      <div className="admin-content">
+        <Container fluid>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="admin-title">Manajemen Kategori</h2>
           <div className="d-flex gap-2">
             <Button variant="secondary" onClick={saveOrder}>
               Simpan Urutan
@@ -210,13 +223,15 @@ const AdminCategories = () => {
                     >
                       <FaEdit /> Edit
                     </Button>
-                    <Button 
-                      variant="danger" 
-                      size="sm"
-                      onClick={() => handleDelete(category._id)}
-                    >
-                      <FaTrash /> Hapus
-                    </Button>
+                    {isAdmin && (
+                      <Button 
+                        variant="danger" 
+                        size="sm"
+                        onClick={() => handleDelete(category._id)}
+                      >
+                        <FaTrash /> Hapus
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -275,7 +290,8 @@ const AdminCategories = () => {
                         type="button"
                         className="btn btn-sm btn-link text-white ms-2 p-0"
                         onClick={() => removeSubcategory(s)}
-                      >x</button>
+                      aria-label="Hapus sub kategori"
+                      ><FaTimes size={12} /></button>
                     </span>
                   ))}
                 </div>
@@ -293,26 +309,38 @@ const AdminCategories = () => {
         </Modal>
 
         {/* Dialog Konfirmasi Hapus Kategori */}
-        <ConfirmDialog
-          show={confirmDelete.show}
-          title="Are you sure?"
-          message={"Do you really want to delete this category? This action cannot be undone."}
-          onCancel={() => setConfirmDelete({ show: false, id: null })}
-          onConfirm={async () => {
-            try {
-              const idToDelete = confirmDelete.id;
-              if (!idToDelete) return;
-              await categoryAPI.deleteCategory(idToDelete);
-              const updatedCategories = categories.filter(cat => cat._id !== idToDelete);
-              setCategories(updatedCategories);
+        {isAdmin && (
+          <ConfirmDialog
+            show={confirmDelete.show}
+            title="Are you sure?"
+            message={"Do you really want to delete this category? This action cannot be undone."}
+            onCancel={() => setConfirmDelete({ show: false, id: null })}
+            onConfirm={async () => {
+              try {
+                const idToDelete = confirmDelete.id;
+                if (!idToDelete) return;
+                await categoryAPI.deleteCategory(idToDelete);
+                const updatedCategories = categories.filter(cat => cat._id !== idToDelete);
+                setCategories(updatedCategories);
             } catch (err) {
-              alert('Gagal menghapus kategori: ' + (err?.response?.data?.message || err.message));
+                showToast('Gagal', 'Gagal menghapus kategori: ' + (err?.response?.data?.message || err.message));
             } finally {
-              setConfirmDelete({ show: false, id: null });
+                setConfirmDelete({ show: false, id: null });
             }
           }}
         />
-      </Container>
+        )}
+        {/* Success Toast notification */}
+        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1060 }}>
+          <SuccessToast
+            show={toast.show}
+            title={toast.title}
+            message={toast.message}
+            onClose={() => setToast(prev => ({ ...prev, show: false }))}
+          />
+        </div>
+        </Container>
+      </div>
     </div>
   );
 };
