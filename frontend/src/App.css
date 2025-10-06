@@ -201,7 +201,7 @@ body .navbar.navbar-transparent {
 
 .text-navbar__brand {
   justify-self: center;
-  color: #000;
+  color: #fff;
   text-decoration: none;
   font-weight: 600;
   font-size: 1.1rem; /* sedikit diperbesar */
@@ -209,7 +209,7 @@ body .navbar.navbar-transparent {
 }
 
 .text-nav-link {
-  color: #000;
+  color: #fff;
   text-decoration: none;
   margin-right: 16px;
   transition: color 0.25s ease;
@@ -228,11 +228,11 @@ body .navbar.navbar-transparent {
   color: #333;
 }
 
-/* Semua teks navbar default hitam */
+/* Semua teks navbar default putih */
 .text-navbar__left .text-nav-link,
 .text-navbar__right .text-nav-link,
 .text-navbar__brand {
-  color: #000 !important;
+  color: #fff;
 }
 
 /* Saat di-scroll: background putih, teks hitam */
@@ -243,7 +243,7 @@ body .navbar.navbar-transparent {
 
 .text-navbar.scrolled .text-navbar__brand,
 .text-navbar.scrolled .text-nav-link {
-  color: #000;
+  color: #000 !important;
 }
 
 .text-navbar.scrolled .text-nav-link:hover,
@@ -261,7 +261,13 @@ body .navbar.navbar-transparent {
 
 /* Offset konten ketika menggunakan navbar fixed-top */
 .with-navbar-offset {
-  padding-top: 80px; /* beri jarak aman di bawah navbar */
+  padding-top: 240px; /* tingkatkan jarak agar konten aman di bawah navbar */
+}
+
+@media (max-width: 768px) {
+  .with-navbar-offset {
+    padding-top: 260px; /* sedikit lebih besar di mobile */
+  }
 }
 
 .testimonials-track {
@@ -374,9 +380,9 @@ body .navbar.navbar-transparent {
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 64px 0; /* py-16 */
+  padding: 24px 0; /* diperkecil dari 64px */
   background: #f8fafc; /* slate-50 */
-  font-size: 14px; /* text-sm */
+  font-size: 12px; /* lebih kecil */
   color: rgba(31, 41, 55, 0.7); /* gray-800/70 */
 }
 
@@ -401,6 +407,6 @@ body .navbar.navbar-transparent {
 }
 
 .footer-copy {
-  margin-top: 24px; /* mt-8 */
+  margin-top: 12px; /* lebih kecil */
   text-align: center;
 }

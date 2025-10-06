@@ -8,7 +8,7 @@ const TokoPage = () => {
   ];
 
   return (
-    <Container className="py-5">
+    <Container className="py-5 with-navbar-offset">
       <h1 className="mb-4">Toko</h1>
       <Row>
         {stores.map(store => (

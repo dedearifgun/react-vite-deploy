@@ -6,6 +6,7 @@ import { productAPI, categoryAPI } from '../utils/api';
 
 const CategoryPage = () => {
   const { gender, category } = useParams(); // category as slug or 'all'
+  const apiGender = gender === 'aksesoris' ? 'unisex' : gender;
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +17,7 @@ const CategoryPage = () => {
       try {
         setLoading(true);
         // Ambil kategori sesuai gender
-        const catRes = await categoryAPI.getCategories({ params: { gender } });
+        const catRes = await categoryAPI.getCategories({ params: { gender: apiGender } });
         const cats = catRes?.data?.data || [];
         setCategories(cats);
 
@@ -30,7 +31,7 @@ const CategoryPage = () => {
           setSelectedCategory('all');
         }
 
-        const params = categoryId ? { gender, category: categoryId } : { gender };
+        const params = categoryId ? { gender: apiGender, category: categoryId } : { gender: apiGender };
         const prodRes = await productAPI.getProducts(params);
         setProducts(prodRes?.data?.data || []);
       } catch (err) {
@@ -54,7 +55,7 @@ const CategoryPage = () => {
     window.location.href = target;
   };
 
-  const genderTitle = gender === 'pria' ? 'Pria' : 'Wanita';
+  const genderTitle = gender === 'pria' ? 'Pria' : gender === 'wanita' ? 'Wanita' : 'Aksesoris';
 
   return (
     <Container className="py-4 with-navbar-offset">

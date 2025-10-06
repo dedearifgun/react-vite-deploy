@@ -39,7 +39,7 @@ function App() {
           <Route path="/admin/categories" element={<AdminCategories />} />
         </Routes>
       </main>
-      <Footer />
+      {!hideHeader && <Footer />}
     </div>
   );
 }

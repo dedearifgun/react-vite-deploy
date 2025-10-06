@@ -13,6 +13,7 @@ const Hero = () => {
             <div className="d-flex justify-content-start gap-3">
               <Button as={Link} to="/category/pria" variant="light" size="lg">PRIA</Button>
               <Button as={Link} to="/category/wanita" variant="light" size="lg">WANITA</Button>
+              <Button as={Link} to="/category/aksesoris" variant="light" size="lg">AKSESORIS</Button>
             </div>
           </Col>
         </Row>

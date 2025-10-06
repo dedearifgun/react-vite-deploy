@@ -42,7 +42,7 @@ const HomePage = () => {
     <>
       <Hero />
       <Tetimoni />
-      <Container className="py-5">
+      <Container className="py-5 with-navbar-offset">
         <h2 className="text-center mb-4">Kategori Populer</h2>
         <Row>
           {categories.map(category => (
@@ -53,7 +53,7 @@ const HomePage = () => {
         </Row>
       </Container>
 
-      <Container className="py-5">
+      <Container className="py-5 with-navbar-offset">
         <h2 className="text-center mb-4">Produk Unggulan</h2>
         <Row>
           {featuredProducts.map(product => (
@@ -64,7 +64,7 @@ const HomePage = () => {
         </Row>
       </Container>
 
-      <Container className="py-5">
+      <Container className="py-5 with-navbar-offset">
         <Row className="align-items-center">
           <Col md={6}>
             <h2>Tentang Kerajinan Kulit Kami</h2>

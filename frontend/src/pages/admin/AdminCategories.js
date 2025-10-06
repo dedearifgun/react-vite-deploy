@@ -216,7 +216,7 @@ const AdminCategories = () => {
                   value={formData.gender}
                   onChange={handleChange}
                 >
-                  <option value="unisex">Unisex</option>
+                  <option value="unisex">Aksesoris</option>
                   <option value="pria">Pria</option>
                   <option value="wanita">Wanita</option>
                 </Form.Select>

@@ -3,7 +3,7 @@ import { Container } from 'react-bootstrap';
 
 const SejarahPage = () => {
   return (
-    <Container className="py-5">
+    <Container className="py-5 with-navbar-offset">
       <h1 className="mb-4">Sejarah</h1>
       <p>
         Leather Craft Shop berawal dari kecintaan terhadap kerajinan kulit. Kami percaya

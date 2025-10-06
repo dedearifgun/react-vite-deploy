@@ -61,7 +61,7 @@ const ProductDetailPage = () => {
 
   if (loading) {
     return (
-      <Container className="py-5 text-center">
+      <Container className="py-5 text-center with-navbar-offset">
         <div className="spinner-border" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -71,7 +71,7 @@ const ProductDetailPage = () => {
 
   if (!product) {
     return (
-      <Container className="py-5 text-center">
+      <Container className="py-5 text-center with-navbar-offset">
         <h2>Produk tidak ditemukan</h2>
         <Link to="/" className="btn btn-primary mt-3">Kembali ke Beranda</Link>
       </Container>
@@ -87,7 +87,7 @@ const ProductDetailPage = () => {
   ].filter(Boolean)));
 
   return (
-    <Container className="py-4">
+    <Container className="py-4 with-navbar-offset">
       <Breadcrumb>
         <Breadcrumb.Item linkAs={Link} linkProps={{ to: '/' }}>Beranda</Breadcrumb.Item>
         <Breadcrumb.Item linkAs={Link} linkProps={{ to: `/category/${product.gender}/all` }}>

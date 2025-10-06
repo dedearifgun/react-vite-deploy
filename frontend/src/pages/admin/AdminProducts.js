@@ -262,7 +262,7 @@ const AdminProducts = () => {
                         </td>
                         <td>{product.name}</td>
                         <td>{getCategoryLabel(product.category)}</td>
-                        <td>{product.gender === 'pria' ? 'Pria' : product.gender === 'wanita' ? 'Wanita' : 'Unisex'}</td>
+                        <td>{product.gender === 'pria' ? 'Pria' : product.gender === 'wanita' ? 'Wanita' : 'Aksesoris'}</td>
                         <td>Rp {Number(product.price).toLocaleString('id-ID')}</td>
                         <td>
                           <Button 
@@ -341,7 +341,7 @@ const AdminProducts = () => {
                   >
                     <option value="pria">Pria</option>
                     <option value="wanita">Wanita</option>
-                    <option value="unisex">Unisex</option>
+                    <option value="unisex">Aksesoris</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
