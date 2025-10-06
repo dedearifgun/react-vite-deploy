@@ -10,10 +10,10 @@ const Hero = () => {
           <Col md={10} lg={6}>
             <h1 className="display-4 fw-bold">Kualitas Tertinggi. Harga Jujur.</h1>
             <p className="lead mb-4">Handcrafted with integrity.</p>
-            <div className="d-flex justify-content-start gap-3">
-              <Button as={Link} to="/category/pria" variant="light" size="lg">PRIA</Button>
-              <Button as={Link} to="/category/wanita" variant="light" size="lg">WANITA</Button>
-              <Button as={Link} to="/category/aksesoris" variant="light" size="lg">AKSESORIS</Button>
+            <div className="hero-cta">
+              <Button as={Link} to="/category/pria" className="cta-btn">SHOP MEN</Button>
+              <Button as={Link} to="/category/wanita" className="cta-btn">SHOP WOMEN</Button>
+              <Button as={Link} to="/category/aksesoris" className="cta-btn">SHOP ACCESSORIES</Button>
             </div>
           </Col>
         </Row>

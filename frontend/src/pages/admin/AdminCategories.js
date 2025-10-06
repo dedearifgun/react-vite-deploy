@@ -48,11 +48,6 @@ const AdminCategories = () => {
     fetchCategories();
   }, [dummyCategories]);
 
-  // Format tanggal
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('id-ID', options);
-  };
 
   // Handle perubahan input form
   const handleChange = (e) => {
@@ -131,15 +126,48 @@ const AdminCategories = () => {
     setConfirmDelete({ show: true, id: categoryId });
   };
 
+  // Drag-and-drop state & handlers
+  const [dragIndex, setDragIndex] = useState(null);
+  const onDragStart = (index) => setDragIndex(index);
+  const onDragOver = (e) => e.preventDefault();
+  const onDrop = (dropIndex) => {
+    if (dragIndex === null || dragIndex === dropIndex) return;
+    const updated = [...categories];
+    const [moved] = updated.splice(dragIndex, 1);
+    updated.splice(dropIndex, 0, moved);
+    setCategories(updated);
+    setDragIndex(null);
+  };
+
+  const saveOrder = async () => {
+    try {
+      const orders = categories.map((c, idx) => ({ id: c._id, order: idx }));
+      const res = await categoryAPI.reorderCategories(orders);
+      if (res.data?.success) {
+        setCategories(res.data.data || categories);
+        alert('Urutan kategori berhasil disimpan');
+      } else {
+        alert('Gagal menyimpan urutan');
+      }
+    } catch (err) {
+      alert('Gagal menyimpan urutan: ' + (err?.response?.data?.message || err.message));
+    }
+  };
+
   return (
     <div className="d-flex">
       <AdminSidebar />
       <Container fluid className="py-4 px-4 flex-grow-1">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2>Manajemen Kategori</h2>
-          <Button variant="primary" onClick={openAddModal}>
-            <FaPlus className="me-2" /> Tambah Kategori
-          </Button>
+          <div className="d-flex gap-2">
+            <Button variant="secondary" onClick={saveOrder}>
+              Simpan Urutan
+            </Button>
+            <Button variant="primary" onClick={openAddModal}>
+              <FaPlus className="me-2" /> Tambah Kategori
+            </Button>
+          </div>
         </div>
         
         {loading ? (
@@ -151,23 +179,28 @@ const AdminCategories = () => {
                 <th>Nama</th>
                 <th>Gender</th>
                 <th>Sub Kategori</th>
-                <th>Tanggal Dibuat</th>
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {categories.map((category) => (
-                <tr key={category._id}>
+              {categories.map((category, idx) => (
+                <tr
+                  key={category._id}
+                  draggable
+                  onDragStart={() => onDragStart(idx)}
+                  onDragOver={onDragOver}
+                  onDrop={() => onDrop(idx)}
+                  style={{ cursor: 'move' }}
+                >
                   <td>{category.name}</td>
                   <td>
                     {category.gender === 'men' && 'Pria'}
                     {category.gender === 'women' && 'Wanita'}
-                    {category.gender === 'unisex' && 'Unisex'}
+                    {category.gender === 'unisex' && 'Aksesoris'}
                     {category.gender === 'pria' && 'Pria'}
                     {category.gender === 'wanita' && 'Wanita'}
                   </td>
                   <td>{(category.subcategories || []).join(', ') || '-'}</td>
-                  <td>{formatDate(category.createdAt)}</td>
                   <td>
                     <Button 
                       variant="warning" 

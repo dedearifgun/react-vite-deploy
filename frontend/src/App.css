@@ -4,6 +4,17 @@
   flex-direction: column;
 }
 
+/* ====== Global Fonts ====== */
+body {
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, .display-1, .display-2, .display-3, .display-4 {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
 main {
   flex: 1;
 }
@@ -259,14 +270,39 @@ body .navbar.navbar-transparent {
   padding: 10px 0;
 }
 
+/* ====== Hero CTA Buttons (like screenshot) ====== */
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-cta .cta-btn {
+  background: rgba(255, 255, 255, 0.95);
+  color: #111827;
+  border: 2px solid #e5e7eb;
+  border-radius: 2px; /* kotak tegas */
+  padding: 12px 22px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.hero-cta .cta-btn:hover {
+  background: #ffffff;
+  border-color: #d1d5db;
+  color: #111827;
+}
+
 /* Offset konten ketika menggunakan navbar fixed-top */
 .with-navbar-offset {
-  padding-top: 240px; /* tingkatkan jarak agar konten aman di bawah navbar */
+  padding-top: 96px !important; /* beri jarak agar tidak tertutup navbar fixed */
 }
 
 @media (max-width: 768px) {
   .with-navbar-offset {
-    padding-top: 260px; /* sedikit lebih besar di mobile */
+    padding-top: 112px !important; /* sedikit lebih lega di mobile */
   }
 }
 

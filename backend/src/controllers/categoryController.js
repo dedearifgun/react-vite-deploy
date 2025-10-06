@@ -19,7 +19,7 @@ exports.getCategories = async (req, res) => {
       query.featured = req.query.featured === 'true';
     }
 
-    const categories = await Category.find(query).sort({ name: 1 });
+    const categories = await Category.find(query).sort({ order: 1, name: 1 });
 
     res.status(200).json({
       success: true,
@@ -130,6 +130,52 @@ exports.updateCategory = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Gagal mengupdate kategori',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Reorder categories
+// @route   PUT /api/categories/reorder
+// @access  Private (Admin)
+exports.reorderCategories = async (req, res) => {
+  try {
+    const { orders } = req.body;
+    if (!Array.isArray(orders)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payload tidak valid: orders harus berupa array'
+      });
+    }
+
+    const bulkOps = orders
+      .filter(o => (o && (o.id || o._id) !== undefined && typeof o.order === 'number'))
+      .map(o => ({
+        updateOne: {
+          filter: { _id: o.id || o._id },
+          update: { $set: { order: o.order } }
+        }
+      }));
+
+    if (bulkOps.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tidak ada operasi yang valid untuk dijalankan'
+      });
+    }
+
+    await Category.bulkWrite(bulkOps);
+    const categories = await Category.find({}).sort({ order: 1, name: 1 });
+
+    res.status(200).json({
+      success: true,
+      message: 'Urutan kategori berhasil disimpan',
+      data: categories
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Gagal menyimpan urutan kategori',
       error: error.message
     });
   }

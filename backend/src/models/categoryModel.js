@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const CategorySchema = new mongoose.Schema({
   name: {
@@ -6,6 +6,11 @@ const CategorySchema = new mongoose.Schema({
     required: [true, 'Nama kategori harus diisi'],
     unique: true,
     trim: true
+  },
+  order: {
+    type: Number,
+    default: 0,
+    index: true
   },
   slug: {
     type: String,

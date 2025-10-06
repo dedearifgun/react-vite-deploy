@@ -4,7 +4,8 @@ const {
   getCategory,
   createCategory,
   updateCategory,
-  deleteCategory
+  deleteCategory,
+  reorderCategories
 } = require('../controllers/categoryController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { uploadCategoryImage } = require('../middleware/uploadMiddleware');
@@ -15,6 +16,8 @@ router
   .route('/')
   .get(getCategories)
   .post(protect, authorize('admin'), uploadCategoryImage, createCategory);
+
+router.put('/reorder', protect, authorize('admin'), reorderCategories);
 
 router
   .route('/:id')

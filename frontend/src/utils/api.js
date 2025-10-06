@@ -55,6 +55,7 @@ export const categoryAPI = {
   createCategory: (categoryData) => api.post('/categories', categoryData),
   updateCategory: (id, categoryData) => api.put(`/categories/${id}`, categoryData),
   deleteCategory: (id) => api.delete(`/categories/${id}`),
+  reorderCategories: (orders) => api.put('/categories/reorder', { orders }),
 };
 
 export const authAPI = {
