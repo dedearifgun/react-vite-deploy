@@ -47,11 +47,10 @@ const AdminSidebar = () => {
       </div>
 
       <div className={classes.footer}>
-        <a
-          href="#"
+        <button
+          type="button"
           className={classes.link}
-          onClick={(event) => {
-            event.preventDefault();
+          onClick={() => {
             localStorage.removeItem('authToken');
             localStorage.removeItem('user');
             window.location.href = '/login';
@@ -59,7 +58,7 @@ const AdminSidebar = () => {
         >
           <IconLogout className={classes.linkIcon} stroke={1.5} />
           <span>Logout</span>
-        </a>
+        </button>
       </div>
     </nav>
   );

@@ -41,7 +41,7 @@ app.get('/', (req, res) => {
 
 // Connect to MongoDB
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/leather-craft-shop';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/narpati-leather';
 
 mongoose
   .connect(MONGO_URI)

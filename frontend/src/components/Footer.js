@@ -34,7 +34,7 @@ const Footer = () => {
           </svg>
         </a>
       </div>
-      <p className="footer-copy">Copyright © 2025 Leather Craft Shop. All rights reserved.</p>
+      <p className="footer-copy">Copyright © 2025 Narpati Leather. All rights reserved.</p>
     </footer>
   );
 };

@@ -4,9 +4,6 @@ import { Link } from 'react-router-dom';
 import { resolveAssetUrl } from '../utils/assets';
 
 const ProductCard = ({ product }) => {
-  const categoryLabel = typeof product.category === 'object' && product.category
-    ? product.category.name
-    : product.category;
   const colorLabel = Array.isArray(product?.colors) && product.colors.length
     ? product.colors[0]
     : (product?.imagesByColor && Object.keys(product.imagesByColor)[0]) || '';

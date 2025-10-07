@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+import logoHitam from '../assets/logo-hitam.png';
+import logoPutih from '../assets/logo-putih.png';
 
 // Navbar teks saja: fixed-top, transparan total, tanpa komponen Bootstrap
 const Header = () => {
@@ -29,7 +31,13 @@ const Header = () => {
           <NavLink to="/category/wanita" className="text-nav-link">WANITA</NavLink>
           <NavLink to="/category/aksesoris" className="text-nav-link">AKSESORIS</NavLink>
         </nav>
-        <Link to="/" className="text-navbar__brand">Leather Craft Shop</Link>
+        <Link to="/" className="text-navbar__brand" aria-label="Narpati Leather">
+          <img
+            src={scrolled ? logoHitam : logoPutih}
+            alt="Narpati Leather"
+            className="text-navbar__brand-img"
+          />
+        </Link>
         <nav className="text-navbar__right">
           <NavLink to="/sejarah" className="text-nav-link">SEJARAH</NavLink>
           <NavLink to="/toko" className="text-nav-link">TOKO</NavLink>

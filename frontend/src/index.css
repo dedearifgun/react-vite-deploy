@@ -16,19 +16,35 @@ code {
 
 .product-card {
   margin-bottom: 30px;
-  transition: transform 0.3s;
+  transition: border-color 0.2s;
+  border: 1px solid #e5e7eb; /* garis tipis lembut */
+  box-shadow: none; /* tanpa shadow */
 }
 
 .product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  transform: none; /* tidak perlu naik turun */
+  box-shadow: none; /* tetap tanpa shadow saat hover */
+  border-color: #d1d5db; /* sedikit lebih tegas saat hover */
+}
+
+/* Foto utama tanpa border berwarna */
+.pc-img-wrapper {
+  border: none;
 }
 
 .category-card {
   position: relative;
   overflow: hidden;
   margin-bottom: 30px;
-  border-radius: 5px;
+  border-radius: 0;
+  border: 1px solid #e5e7eb; /* garis tipis lembut */
+  box-shadow: none; /* tanpa shadow */
+}
+
+/* Sudut gambar kategori juga lancip */
+.category-card .card-img-top {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .category-card img {

@@ -44,7 +44,7 @@ const CategoryPage = () => {
       }
     };
     fetchData();
-  }, [gender, category]);
+  }, [gender, category, apiGender]);
 
   const handleSelectCategory = (slug) => {
     setSelectedCategory(slug);
@@ -53,11 +53,10 @@ const CategoryPage = () => {
   };
 
   const genderTitle = gender === 'pria' ? 'Pria' : gender === 'wanita' ? 'Wanita' : 'Aksesoris';
+  const heroClass = gender === 'pria' ? 'category-hero--pria' : gender === 'wanita' ? 'category-hero--wanita' : 'category-hero--aksesoris';
 
   return (
     <Container className="py-4 with-navbar-offset">
-      <h1 className="mb-4">Koleksi {genderTitle}</h1>
-
       <Row className="mb-4">
         <Col lg={3} md={4} className="mb-3 mb-md-0">
           <CategoryFilters
@@ -68,6 +67,13 @@ const CategoryPage = () => {
           />
         </Col>
         <Col lg={9} md={8}>
+          {/* Banner kategori dengan judul & tagline di dalam foto */}
+          <div className={`category-hero ${heroClass}`} aria-label={`Banner koleksi ${genderTitle}`}>
+            <div className="category-hero__overlay">
+              <h1 className="category-hero__title">Koleksi {genderTitle}</h1>
+              <p className="category-hero__tagline">Kualitas Tertinggi. Harga Jujur.</p>
+            </div>
+          </div>
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border" role="status">
