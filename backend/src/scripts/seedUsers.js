@@ -36,6 +36,14 @@ async function run() {
       role: 'user',
     });
 
+    await ensureUser({
+      name: 'Staff',
+      username: 'staff',
+      email: 'staff@example.com',
+      password: 'staff123',
+      role: 'staff',
+    });
+
     await mongoose.disconnect();
     process.exit(0);
   } catch (err) {

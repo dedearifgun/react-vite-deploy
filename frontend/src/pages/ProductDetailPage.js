@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Button, Image } from 'react-bootstrap';
+import { Helmet } from 'react-helmet-async';
+import { Container, Row, Col, Button, Image, Modal } from 'react-bootstrap';
 import { useParams, Link } from 'react-router-dom';
-import { productAPI } from '../utils/api';
+import { productAPI, analyticsAPI } from '../utils/api';
 import { addItem as cartAddItem } from '../utils/cart';
-import { resolveAssetUrl } from '../utils/assets';
+import { resolveAssetUrlSized } from '../utils/assets';
 import SuccessToast from '../components/SuccessToast';
 
 const ProductDetailPage = () => {
-  const { id } = useParams();
+  const { id, code } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [mainImage, setMainImage] = useState('');
+  const [showZoom, setShowZoom] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
   const [toast, setToast] = useState({ show: false, title: '', message: '' });
   const showToast = (title, message) => {
     setToast({ show: true, title, message });
@@ -24,10 +27,10 @@ const ProductDetailPage = () => {
     const loadProduct = async () => {
       try {
         setLoading(true);
-        const res = await productAPI.getProduct(id);
+        const res = id ? await productAPI.getProduct(id) : await productAPI.getProductByCode(code);
         const p = res?.data?.data;
         setProduct(p);
-        setMainImage(resolveAssetUrl(p?.imageUrl || ''));
+        setMainImage(resolveAssetUrlSized(p?.imageUrl || '', 'large'));
         if (p?.colors?.length) setSelectedColor(p.colors[0]);
         if (p?.sizes?.length) setSelectedSize(p.sizes[0]);
         // tidak perlu set quantity
@@ -39,20 +42,20 @@ const ProductDetailPage = () => {
       }
     };
     loadProduct();
-  }, [id]);
+  }, [id, code]);
 
   const onSelectColor = (color) => {
     setSelectedColor(color);
     if (product?.imagesByColor && product.imagesByColor[color]) {
-      setMainImage(resolveAssetUrl(product.imagesByColor[color]));
+      setMainImage(resolveAssetUrlSized(product.imagesByColor[color], 'large'));
     } else if (product?.additionalImages?.length) {
-      setMainImage(resolveAssetUrl(product.additionalImages[0]));
+      setMainImage(resolveAssetUrlSized(product.additionalImages[0], 'large'));
     } else {
-      setMainImage(resolveAssetUrl(product?.imageUrl || ''));
+      setMainImage(resolveAssetUrlSized(product?.imageUrl || '', 'large'));
     }
   };
 
-  const handleBuyClick = () => {
+  const handleBuyClick = async () => {
     const phone = '6285288010801';
     const title = product?.name || '';
     const hasSizes = (product?.sizes || []).length > 0;
@@ -66,6 +69,18 @@ const ProductDetailPage = () => {
     const sizePart = hasSizes && size ? ` serta ukuran "${size}"` : '';
     const text = `Hallo, Saya ingin membeli "${title}" dengan warna "${color}"${sizePart}`;
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    try {
+      await analyticsAPI.trackWhatsAppClick({
+        source: 'product_detail',
+        productId: product?._id,
+        productName: product?.name,
+        itemsCount: 1,
+        page: window.location.pathname,
+      });
+    } catch (err) {
+      // abaikan error tracking agar tidak mengganggu UX
+      console.debug('Tracking WA gagal:', err?.message || err);
+    }
     window.open(url, '_blank');
   };
 
@@ -110,14 +125,84 @@ const ProductDetailPage = () => {
 
   const categoryLabel = typeof product.category === 'object' && product.category ? product.category.name : product.category;
   const categorySlug = typeof product.category === 'object' && product.category ? product.category.slug : String(product.category || '').toLowerCase();
-  // Siapkan galeri: gambar utama + gambar tambahan (unik)
-  const galleryImages = Array.from(new Set([
-    product?.imageUrl,
-    ...((product?.additionalImages || []))
-  ].filter(Boolean)));
+  // Siapkan galeri terstruktur dan badge promosi
+  const structuredThumbs = [
+    { label: 'Utama', src: product?.imageUrl },
+    { label: 'Samping', src: (product?.additionalImages || [])[0] },
+    { label: 'Detail material', src: (product?.additionalImages || [])[1] }
+  ].filter(t => !!t.src);
+  const isBestSeller = !!product?.featured;
+  const isNew = (() => {
+    const created = product?.createdAt ? new Date(product.createdAt) : null;
+    if (!created) return false;
+    const days = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+    return days <= 30;
+  })();
+  const hasDiscount = (() => {
+    const dp = Number(product?.discountPercent || product?.discount || 0);
+    if (dp > 0) return true;
+    return (product?.variants || []).some(v => Number(v.priceDelta || 0) < 0);
+  })();
+  const getVariantStock = (size, color) => {
+    const hasSizes = (product?.sizes || []).length > 0;
+    if (!color) return 0;
+    if (hasSizes) {
+      const v = (product?.variants || []).find(x => x.size === size && x.color === color);
+      return Number(v?.stock || 0);
+    }
+    // tanpa ukuran: cari varian berdasarkan warna saja
+    const v = (product?.variants || []).find(x => x.color === color && (x.size == null || x.size === ''));
+    if (v) return Number(v.stock || 0);
+    // fallback ke stok global jika ada
+    return Number(product?.stock || 0);
+  };
+  const variantStock = getVariantStock(selectedSize, selectedColor);
 
   return (
     <Container className="py-4 with-navbar-offset">
+      <Helmet>
+        <title>{product.name} | Narpati Leather</title>
+        <meta name="description" content={(product.description || '').slice(0, 160)} />
+        <link rel="canonical" href={`${window.location.origin}/p/${encodeURIComponent(product.code || '')}`} />
+        <meta property="og:title" content={`${product.name} | Narpati Leather`} />
+        <meta property="og:description" content={(product.description || '').slice(0, 160)} />
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={`${window.location.origin}/p/${encodeURIComponent(product.code || '')}`} />
+        <meta property="og:image" content={resolveAssetUrlSized(product.imageUrl, 'large')} />
+        <meta property="product:price:amount" content={String(Number(product.price || 0))} />
+        <meta property="product:price:currency" content="IDR" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org/',
+            '@type': 'Product',
+            name: product.name,
+            image: [resolveAssetUrlSized(product.imageUrl, 'large'), ...(product.additionalImages || []).map(u => resolveAssetUrlSized(u, 'large'))],
+            description: product.description || '',
+            sku: product.code || undefined,
+            brand: { '@type': 'Brand', name: 'Narpati Leather' },
+            offers: {
+              '@type': 'Offer',
+              priceCurrency: 'IDR',
+              price: Number(product.price || 0),
+              availability: Number(product.stock || 0) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+              url: `${window.location.origin}/p/${encodeURIComponent(product.code || '')}`,
+            }
+          })}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Beranda', item: `${window.location.origin}/` },
+              { '@type': 'ListItem', position: 2, name: (product.gender === 'pria' ? 'Pria' : product.gender === 'wanita' ? 'Wanita' : 'Aksesoris'), item: `${window.location.origin}/category/${product.gender}/all` },
+              { '@type': 'ListItem', position: 3, name: categoryLabel, item: `${window.location.origin}/category/${product.gender}/${categorySlug}` },
+              { '@type': 'ListItem', position: 4, name: product.name, item: `${window.location.origin}/p/${encodeURIComponent(product.code || '')}` },
+            ]
+          })}
+        </script>
+      </Helmet>
       <div className="d-flex flex-wrap align-items-center gap-2 text-muted fw-medium mb-3" style={{ fontSize: '0.875rem' }}>
         <Link to="/" aria-label="Home" className="text-muted">
           <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -146,24 +231,39 @@ const ProductDetailPage = () => {
         <Col md={6}>
           <Row>
             <Col xs={3} className="d-none d-md-block">
-              {galleryImages.map((img, index) => (
-                <div key={index} style={{ marginBottom: 12, cursor: 'pointer' }} onClick={() => setMainImage(resolveAssetUrl(img))}>
-                  <Image
-                    src={resolveAssetUrl(img)}
-                    alt={`${product.name} ${index}`}
-                    thumbnail
-                    fluid
-                  />
+              {structuredThumbs.map((t, index) => (
+                <div key={index} style={{ marginBottom: 12, cursor: 'pointer' }} onClick={() => setMainImage(resolveAssetUrlSized(t.src, 'large'))}>
+                  <div className="position-relative">
+                <Image
+                  src={resolveAssetUrlSized(t.src, 'thumb')}
+                  alt={`${product.name} - ${t.label}`}
+                  thumbnail
+                  fluid
+                />
+                    <span className="badge bg-dark position-absolute" style={{ top: 6, left: 6 }}>{t.label}</span>
+                  </div>
                 </div>
               ))}
             </Col>
             <Col xs={12} md={9}>
-              <Image src={resolveAssetUrl(mainImage || product.imageUrl)} alt={product.name} fluid className="mb-3" />
+              <Image
+                src={resolveAssetUrlSized(mainImage || product.imageUrl, 'large')}
+                alt={product.name}
+                fluid
+                className="mb-3"
+                style={{ cursor: 'zoom-in' }}
+                onClick={() => { setShowZoom(true); setZoomed(false); }}
+              />
             </Col>
           </Row>
         </Col>
         <Col md={6}>
-          <h1>{product.name}</h1>
+          <div className="d-flex align-items-center gap-2">
+            <h1 className="mb-0">{product.name}</h1>
+            {hasDiscount && (<span className="badge bg-danger">Diskon</span>)}
+            {isNew && (<span className="badge bg-primary">Baru</span>)}
+            {isBestSeller && (<span className="badge bg-warning text-dark">Best Seller</span>)}
+          </div>
           {product.code && (<h6 className="text-muted mb-3">Kode: {product.code}</h6>)}
           <h3 className="mb-2">Rp {Number(product.price).toLocaleString('id-ID')}</h3>
           <div className="text-gray-500 mb-4">Harga sudah termasuk pajak</div>
@@ -204,7 +304,7 @@ const ProductDetailPage = () => {
                         onClick={() => onSelectColor(color)}
                       >
                         <Image
-                          src={resolveAssetUrl(colorImg)}
+                          src={resolveAssetUrlSized(colorImg, 'thumb')}
                           alt={color}
                           style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4, border: selectedColor === color ? '2px solid #111' : '1px solid #ddd' }}
                           thumbnail
@@ -225,6 +325,15 @@ const ProductDetailPage = () => {
                   );
                 })}
               </div>
+              {selectedColor && (((product?.sizes || []).length > 0) ? selectedSize : true) && (
+                <div className="mt-2">
+                  {variantStock === 0 ? (
+                    <span className="text-danger fw-semibold">Sold out</span>
+                  ) : variantStock <= 3 ? (
+                    <span className="text-warning fw-semibold">Tersisa {variantStock}</span>
+                  ) : null}
+                </div>
+              )}
             </div>
           )}
           
@@ -252,14 +361,14 @@ const ProductDetailPage = () => {
             <Button
               variant="outline-secondary"
               onClick={handleAddToCart}
-              disabled={!selectedColor || ((product?.sizes || []).length > 0 && !selectedSize)}
+              disabled={!selectedColor || (((product?.sizes || []).length > 0) && !selectedSize) || variantStock === 0}
             >
               Tambah ke Keranjang
             </Button>
             <Button
               className="btn-buy-now"
               onClick={handleBuyClick}
-              disabled={!selectedColor || ((product?.sizes || []).length > 0 && !selectedSize)}
+              disabled={!selectedColor || (((product?.sizes || []).length > 0) && !selectedSize) || variantStock === 0}
             >
               Checkout via WhatsApp
             </Button>
@@ -277,6 +386,22 @@ const ProductDetailPage = () => {
           onClose={() => setToast(prev => ({ ...prev, show: false }))}
         />
       </div>
+      {/* Zoom Modal */}
+      <Modal show={showZoom} onHide={() => setShowZoom(false)} size="lg" centered>
+        <Modal.Body>
+          <div
+            className="w-100"
+            style={{ overflow: 'auto', maxHeight: '70vh', cursor: zoomed ? 'zoom-out' : 'zoom-in' }}
+            onClick={() => setZoomed(z => !z)}
+          >
+            <img
+              src={resolveAssetUrlSized(mainImage || product.imageUrl, 'large')}
+              alt={product.name}
+              style={{ width: '100%', transform: `scale(${zoomed ? 1.6 : 1})`, transformOrigin: 'center center', transition: 'transform 0.2s ease' }}
+            />
+          </div>
+        </Modal.Body>
+      </Modal>
     </Container>
   );
 };

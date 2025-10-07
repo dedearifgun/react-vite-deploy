@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../utils/api';
@@ -32,6 +33,11 @@ const LoginPage = () => {
 
   return (
     <Container className="py-5">
+      <Helmet>
+        <title>Login Admin | Narpati Leather</title>
+        <meta name="robots" content="noindex,nofollow" />
+        <link rel="canonical" href={`${window.location.origin}/login`} />
+      </Helmet>
       <Row className="justify-content-center">
         <Col md={6} lg={5}>
           <Card className="login-form">

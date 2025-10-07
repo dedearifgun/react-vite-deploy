@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Container, Row, Col, Card, Table, Button, Modal, Form } from 'react-bootstrap';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import AdminSidebar from '../../components/AdminSidebar';
 import { productAPI, categoryAPI } from '../../utils/api';
+import SuccessToast from '../../components/SuccessToast';
+import ErrorNotice from '../../components/ErrorNotice';
 import { resolveAssetUrl } from '../../utils/assets';
 
 const AdminProducts = () => {
@@ -21,23 +24,63 @@ const AdminProducts = () => {
     name: '',
     description: '',
     category: '', // category id
+    subcategory: '',
     gender: 'pria',
     price: '',
     imageFile: null,
     sizes: [],
     colors: [],
     stock: 7,
-    variants: []
+    variants: [],
+    status: 'published'
   });
   const [colorImagesFiles, setColorImagesFiles] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
+  const [errorNotice, setErrorNotice] = useState({ show: false, message: '' });
+  const showError = (msg) => {
+    setErrorNotice({ show: true, message: msg });
+    setTimeout(() => setErrorNotice(prev => ({ ...prev, show: false })), 3000);
+  };
+  const [successToast, setSuccessToast] = useState({ show: false, title: '', message: '' });
+  const showSuccess = (title, message) => {
+    setSuccessToast({ show: true, title, message });
+    setTimeout(() => setSuccessToast(prev => ({ ...prev, show: false })), 3000);
+  };
+
+  // Drag-and-drop state & handlers for manual ordering
+  const [dragIndex, setDragIndex] = useState(null);
+  const onDragStart = (index) => setDragIndex(index);
+  const onDragOver = (e) => e.preventDefault();
+  const onDrop = (dropIndex) => {
+    if (dragIndex === null || dragIndex === dropIndex) return;
+    const updated = [...products];
+    const [moved] = updated.splice(dragIndex, 1);
+    updated.splice(dropIndex, 0, moved);
+    setProducts(updated);
+    setDragIndex(null);
+  };
+
+  const saveOrder = async () => {
+    try {
+      const orders = products.map((p, idx) => ({ id: p._id || p.id, order: idx }));
+      const res = await productAPI.reorderProducts(orders);
+      if (res.data?.success) {
+        setProducts(res.data.data || products);
+        showSuccess('Berhasil!', 'Urutan produk berhasil disimpan');
+      } else {
+        showError('Gagal menyimpan urutan produk');
+      }
+    } catch (err) {
+      showError('Gagal menyimpan urutan: ' + (err?.response?.data?.message || err.message));
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [prodRes, catRes] = await Promise.all([
-          productAPI.getProducts(),
+          productAPI.getProducts({ sort: 'manual', limit: 1000 }),
           categoryAPI.getCategories()
         ]);
         if (prodRes.data?.success) setProducts(prodRes.data.data || []);
@@ -54,7 +97,7 @@ const AdminProducts = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setCurrentProduct({ _id: '', name: '', description: '', category: '', gender: 'pria', price: '', imageFile: null, sizes: [], colors: [], stock: 7, mainImagesFiles: [] });
+    setCurrentProduct({ _id: '', name: '', description: '', category: '', subcategory: '', gender: 'pria', price: '', imageFile: null, sizes: [], colors: [], stock: 7, mainImagesFiles: [], status: 'published' });
     setSizeInput('');
     setColorInput('');
     setColorImagesFiles({});
@@ -69,6 +112,7 @@ const AdminProducts = () => {
         name: product.name || '',
         description: product.description || '',
         category: typeof product.category === 'object' ? product.category?._id : product.category || '',
+        subcategory: product.subcategory || '',
         gender: product.gender || 'pria',
         price: product.price || '',
         imageFile: null,
@@ -76,7 +120,8 @@ const AdminProducts = () => {
         colors: product.colors || [],
         stock: product.stock ?? 7,
         variants: product.variants || [],
-        imagesByColor: product.imagesByColor || {}
+        imagesByColor: product.imagesByColor || {},
+        status: product.status || 'published'
       });
       setIsEditing(true);
     } else {
@@ -89,7 +134,8 @@ const AdminProducts = () => {
     const { name, value } = e.target;
     setCurrentProduct(prev => ({
       ...prev,
-      [name]: name === 'price' ? parseFloat(value) || '' : value
+      [name]: name === 'price' ? parseFloat(value) || '' : value,
+      ...(name === 'category' ? { subcategory: '' } : {})
     }));
   };
 
@@ -97,7 +143,7 @@ const AdminProducts = () => {
     const files = Array.from(e.target.files || []);
     const valid = files.filter(f => (f.size || 0) <= 20 * 1024 * 1024);
     if (files.length !== valid.length) {
-      alert('Sebagian gambar utama melebihi 20MB dan diabaikan.');
+      showError('Sebagian gambar utama melebihi 20MB dan diabaikan.');
     }
     setCurrentProduct(prev => ({ ...prev, mainImagesFiles: valid, imageFile: valid[0] || null }));
   };
@@ -156,13 +202,32 @@ const AdminProducts = () => {
     e.preventDefault();
 
     try {
+      // Validasi dasar
+      const basePrice = Number(currentProduct.price);
+      if (!isFinite(basePrice) || basePrice <= 0) {
+        showError('Harga produk harus lebih dari 0 dan valid.');
+        return;
+      }
+      // SKU tidak wajib; akan dihasilkan otomatis di backend jika kosong
+      const hasNegStock = (currentProduct.variants || []).some(v => Number(v.stock) < 0);
+      if (hasNegStock) {
+        showError('Stok varian tidak boleh negatif.');
+        return;
+      }
+      const invalidVariantPrice = (currentProduct.variants || []).some(v => (basePrice + Number(v.priceDelta || 0)) < 0);
+      if (invalidVariantPrice) {
+        showError('Harga final varian tidak boleh negatif. Periksa priceDelta.');
+        return;
+      }
       if (!isEditing) {
         const fd = new FormData();
         fd.append('name', currentProduct.name);
         fd.append('description', currentProduct.description || '');
         fd.append('category', currentProduct.category);
+        if (currentProduct.subcategory) fd.append('subcategory', currentProduct.subcategory);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
+        fd.append('status', currentProduct.status || 'published');
         // stok dihapus dari form; jangan kirim
         // main images: allow multiple; server will set pertama sebagai imageUrl
         (currentProduct.mainImagesFiles || (currentProduct.imageFile ? [currentProduct.imageFile] : []))
@@ -186,8 +251,10 @@ const AdminProducts = () => {
         fd.append('name', currentProduct.name);
         fd.append('description', currentProduct.description || '');
         fd.append('category', currentProduct.category);
+        if (currentProduct.subcategory) fd.append('subcategory', currentProduct.subcategory);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
+        fd.append('status', currentProduct.status || 'published');
         // stok dihapus dari form; jangan kirim
         (currentProduct.sizes || []).forEach(s => fd.append('sizes[]', s));
         (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
@@ -208,7 +275,7 @@ const AdminProducts = () => {
       }
       handleCloseModal();
     } catch (err) {
-      alert('Gagal menyimpan produk: ' + (err?.response?.data?.message || err.message));
+      showError('Gagal menyimpan produk: ' + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -221,14 +288,22 @@ const AdminProducts = () => {
 
   return (
     <div className="admin-layout">
+      <Helmet>
+        <title>Admin Produk | Narpati Leather</title>
+        <meta name="robots" content="noindex,nofollow" />
+        <link rel="canonical" href={`${window.location.origin}/admin/products`} />
+      </Helmet>
       <AdminSidebar />
       <div className="admin-content">
         <Container fluid>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2 className="admin-title">Manajemen Produk</h2>
-            <Button variant="primary" onClick={() => handleShowModal()}>
-              <i className="fas fa-plus me-2"></i> Tambah Produk
-            </Button>
+            <div className="d-flex gap-2">
+              <Button variant="secondary" onClick={saveOrder}>Simpan Urutan</Button>
+              <Button variant="primary" onClick={() => handleShowModal()}>
+                <i className="fas fa-plus me-2"></i> Tambah Produk
+              </Button>
+            </div>
           </div>
           
           <Card>
@@ -247,14 +322,22 @@ const AdminProducts = () => {
                       <th>Gambar</th>
                       <th>Nama Produk</th>
                       <th>Kategori</th>
+                      <th>Sub Kategori</th>
                       <th>Untuk</th>
                       <th>Harga</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map(product => (
-                      <tr key={product._id || product.id}>
+                    {products.map((product, idx) => (
+                      <tr
+                        key={product._id || product.id}
+                        draggable
+                        onDragStart={() => onDragStart(idx)}
+                        onDragOver={onDragOver}
+                        onDrop={() => onDrop(idx)}
+                        style={{ cursor: 'move' }}
+                      >
                         <td>{product._id || product.id}</td>
                         <td>
                           <img 
@@ -265,6 +348,7 @@ const AdminProducts = () => {
                         </td>
                         <td>{product.name}</td>
                         <td>{getCategoryLabel(product.category)}</td>
+                        <td>{product.subcategory || '-'}</td>
                         <td>{product.gender === 'pria' ? 'Pria' : product.gender === 'wanita' ? 'Wanita' : 'Aksesoris'}</td>
                         <td>Rp {Number(product.price).toLocaleString('id-ID')}</td>
                         <td>
@@ -304,7 +388,7 @@ const AdminProducts = () => {
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
             <Row>
-              <Col md={6}>
+              <Col md={8}>
                 <Form.Group className="mb-3">
                   <Form.Label>Nama Produk</Form.Label>
                   <Form.Control 
@@ -316,6 +400,25 @@ const AdminProducts = () => {
                   />
                 </Form.Group>
               </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Select
+                    name="status"
+                    value={currentProduct.status}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            {/* Kategori dan Sub Kategori berdampingan */}
+            <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Kategori</Form.Label>
@@ -330,6 +433,28 @@ const AdminProducts = () => {
                       <option key={cat._id} value={cat._id}>{cat.name}</option>
                     ))}
                   </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Sub Kategori</Form.Label>
+                  {(() => {
+                    const selected = categories.find(c => c._id === currentProduct.category);
+                    const subs = selected?.subcategories || [];
+                    return (
+                      <Form.Select
+                        name="subcategory"
+                        value={currentProduct.subcategory || ''}
+                        onChange={handleInputChange}
+                        disabled={!selected || subs.length === 0}
+                      >
+                        <option value="">{subs.length ? 'Pilih Sub Kategori' : 'Tidak ada sub kategori'}</option>
+                        {subs.map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </Form.Select>
+                    );
+                  })()}
                 </Form.Group>
               </Col>
             </Row>
@@ -376,6 +501,8 @@ const AdminProducts = () => {
               </Col>
             </Row>
 
+            {/* Status dipindah ke baris Nama Produk */}
+
             <Form.Group className="mb-3">
               <Form.Label>Upload Gambar Produk (bisa lebih dari 1)</Form.Label>
               <Form.Control 
@@ -392,29 +519,57 @@ const AdminProducts = () => {
 
             {/* Gambar tambahan dihapus sesuai permintaan */}
 
-            {/* Warna Produk */}
-            <Form.Group className="mb-3">
-              <Form.Label>Warna</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Masukkan warna lalu tekan Enter, misal: Merah"
-                value={colorInput}
-                onChange={(e) => setColorInput(e.target.value)}
-                onKeyDown={addColorFromInput}
-              />
-              <div className="mt-2 d-flex flex-wrap gap-2">
-                {(currentProduct.colors || []).map((c) => (
-                  <span key={c} className="badge bg-dark">
-                    {c}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-link text-white ms-2 p-0"
-                      onClick={() => removeColor(c)}
-                    >x</button>
-                  </span>
-                ))}
-              </div>
-            </Form.Group>
+            {/* Warna dan Ukuran berdampingan untuk menghemat ruang */}
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Warna</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Masukkan warna lalu tekan Enter, misal: Merah"
+                    value={colorInput}
+                    onChange={(e) => setColorInput(e.target.value)}
+                    onKeyDown={addColorFromInput}
+                  />
+                  <div className="mt-2 d-flex flex-wrap gap-2">
+                    {(currentProduct.colors || []).map((c) => (
+                      <span key={c} className="badge bg-dark">
+                        {c}
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-link text-white ms-2 p-0"
+                          onClick={() => removeColor(c)}
+                        >x</button>
+                      </span>
+                    ))}
+                  </div>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Ukuran Sepatu</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Masukkan ukuran lalu tekan Enter, misal: 23"
+                    value={sizeInput}
+                    onChange={(e) => setSizeInput(e.target.value)}
+                    onKeyDown={addSizeFromInput}
+                  />
+                  <div className="mt-2 d-flex flex-wrap gap-2">
+                    {(currentProduct.sizes || []).map((s) => (
+                      <span key={s} className="badge bg-primary">
+                        {s}
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-link text-white ms-2 p-0"
+                          onClick={() => removeSize(s)}
+                        >x</button>
+                      </span>
+                    ))}
+                  </div>
+                </Form.Group>
+              </Col>
+            </Row>
 
             {(currentProduct.colors || []).map((c) => {
               const localFile = colorImagesFiles[c];
@@ -441,35 +596,13 @@ const AdminProducts = () => {
               );
             })}
 
-            {/* Ukuran Sepatu */}
-            <Form.Group className="mb-3">
-              <Form.Label>Ukuran Sepatu</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Masukkan ukuran lalu tekan Enter, misal: 23"
-                value={sizeInput}
-                onChange={(e) => setSizeInput(e.target.value)}
-                onKeyDown={addSizeFromInput}
-              />
-              <div className="mt-2 d-flex flex-wrap gap-2">
-                {(currentProduct.sizes || []).map((s) => (
-                  <span key={s} className="badge bg-primary">
-                    {s}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-link text-white ms-2 p-0"
-                      onClick={() => removeSize(s)}
-                    >x</button>
-                  </span>
-                ))}
-              </div>
-            </Form.Group>
+            {/* Ukuran dipindah ke baris yang sama dengan Warna */}
 
-            {/* Varian: SKU & Stok per kombinasi ukuran-warna */}
-            {(currentProduct.sizes?.length || 0) > 0 && (currentProduct.colors?.length || 0) > 0 && (
+            {/* Varian: Stok per kombinasi ukuran-warna atau hanya per warna */}
+            {(currentProduct.colors?.length || 0) > 0 && (
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-2">
-                  <h6 className="mb-0">Varian (SKU & Stok)</h6>
+                  <h6 className="mb-0">Varian (Stok)</h6>
                   <small className="text-muted">Stok total dihitung dari seluruh varian</small>
                 </div>
                 <div className="table-responsive">
@@ -483,52 +616,83 @@ const AdminProducts = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {currentProduct.sizes.map((size) => (
-                        currentProduct.colors.map((color) => {
-                          const existing = (currentProduct.variants || []).find(v => v.size === size && v.color === color) || { sku: '', stock: 0 };
-                          return (
-                            <tr key={`${size}-${color}`}>
-                              <td>{size}</td>
-                              <td>{color}</td>
-                              <td>
-                                <Form.Control
-                                  type="text"
-                                  value={existing.sku}
-                                  onChange={(e) => {
-                                    const sku = e.target.value;
-                                    setCurrentProduct(prev => {
-                                      const variants = [...(prev.variants || [])];
-                                      const idx = variants.findIndex(v => v.size === size && v.color === color);
-                                      if (idx >= 0) variants[idx] = { ...variants[idx], sku };
-                                      else variants.push({ size, color, sku, stock: 0 });
-                                      return { ...prev, variants };
-                                    });
-                                  }}
-                                  placeholder={`SKU ${size}-${color}`}
-                                />
-                              </td>
-                              <td style={{ maxWidth: 140 }}>
-                                <Form.Control
-                                  type="number"
-                                  min={0}
-                                  value={existing.stock}
-                                  onChange={(e) => {
-                                    const stock = Number(e.target.value || 0);
-                                    setCurrentProduct(prev => {
-                                      const variants = [...(prev.variants || [])];
-                                      const idx = variants.findIndex(v => v.size === size && v.color === color);
-                                      if (idx >= 0) variants[idx] = { ...variants[idx], stock };
-                                      else variants.push({ size, color, sku: '', stock });
-                                      return { ...prev, variants };
-                                    });
-                                  }}
-                                  placeholder="0"
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })
-                      ))}
+                      {(currentProduct.sizes?.length || 0) > 0
+                        ? (
+                          currentProduct.sizes.map((size) => (
+                            currentProduct.colors.map((color) => {
+                              const existing = (currentProduct.variants || []).find(v => v.size === size && v.color === color) || { stock: 0 };
+                              return (
+                                <tr key={`${size}-${color}`}>
+                                  <td>{size}</td>
+                                  <td>{color}</td>
+                                  <td style={{ maxWidth: 160 }}>
+                                    <Form.Control
+                                      type="text"
+                                      value={existing.sku || 'Auto saat simpan'}
+                                      readOnly
+                                      plaintext
+                                    />
+                                  </td>
+                                  <td style={{ maxWidth: 140 }}>
+                                    <Form.Control
+                                      type="number"
+                                      min={0}
+                                      value={existing.stock}
+                                      onChange={(e) => {
+                                        const stock = Number(e.target.value || 0);
+                                        setCurrentProduct(prev => {
+                                          const variants = [...(prev.variants || [])];
+                                          const idx = variants.findIndex(v => v.size === size && v.color === color);
+                                          if (idx >= 0) variants[idx] = { ...variants[idx], stock };
+                                          else variants.push({ size, color, stock });
+                                          return { ...prev, variants };
+                                        });
+                                      }}
+                                      placeholder="0"
+                                    />
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          ))
+                        )
+                        : (
+                          currentProduct.colors.map((color) => {
+                            const existing = (currentProduct.variants || []).find(v => (v.size == null || v.size === '') && v.color === color) || { stock: 0 };
+                            return (
+                              <tr key={`no-size-${color}`}>
+                                <td>-</td>
+                                <td>{color}</td>
+                                <td style={{ maxWidth: 160 }}>
+                                  <Form.Control
+                                    type="text"
+                                    value={existing.sku || 'Auto saat simpan'}
+                                    readOnly
+                                    plaintext
+                                  />
+                                </td>
+                                <td style={{ maxWidth: 140 }}>
+                                  <Form.Control
+                                    type="number"
+                                    min={0}
+                                    value={existing.stock}
+                                    onChange={(e) => {
+                                      const stock = Number(e.target.value || 0);
+                                      setCurrentProduct(prev => {
+                                        const variants = [...(prev.variants || [])];
+                                        const idx = variants.findIndex(v => (v.size == null || v.size === '') && v.color === color);
+                                        if (idx >= 0) variants[idx] = { ...variants[idx], stock };
+                                        else variants.push({ size: null, color, stock });
+                                        return { ...prev, variants };
+                                      });
+                                    }}
+                                    placeholder="0"
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                     </tbody>
                   </table>
                 </div>
@@ -562,13 +726,28 @@ const AdminProducts = () => {
               await productAPI.deleteProduct(idToDelete);
               setProducts(products.filter(p => (p._id || p.id) !== idToDelete));
             } catch (err) {
-              alert('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
+              showError('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
             } finally {
               setConfirmDelete({ show: false, id: null });
             }
           }}
         />
       )}
+
+      {/* Notification area */}
+      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1060 }}>
+        <SuccessToast
+          show={successToast.show}
+          title={successToast.title}
+          message={successToast.message}
+          onClose={() => setSuccessToast(prev => ({ ...prev, show: false }))}
+        />
+        <ErrorNotice
+          show={errorNotice.show}
+          message={errorNotice.message}
+          onClose={() => setErrorNotice(prev => ({ ...prev, show: false }))}
+        />
+      </div>
     </div>
   );
 };

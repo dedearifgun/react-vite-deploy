@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Group } from '@mantine/core';
-import { IconGauge, IconBox, IconTags, IconLogout } from '@tabler/icons-react';
+import { IconGauge, IconBox, IconTags, IconLogout, IconListDetails } from '@tabler/icons-react';
 import classes from './NavbarSimple.module.css';
-import logoGold from '../assets/logo-gold.png';
+import logoPutih from '../assets/logo-putih.png';
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -11,13 +11,21 @@ const AdminSidebar = () => {
   // Ambil role pengguna dari localStorage untuk ditampilkan di header
   const storedUser = localStorage.getItem('user');
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-  const roleLabel = parsedUser?.role === 'admin' ? 'ADMIN' : 'User';
+  const roleLabel = parsedUser?.role === 'admin' ? 'ADMIN' : (parsedUser?.role === 'staff' ? 'STAFF' : 'User');
+  const canManage = parsedUser?.role === 'admin' || parsedUser?.role === 'staff';
 
-  const data = useMemo(() => [
-    { link: '/admin', label: 'Dashboard', icon: IconGauge },
-    { link: '/admin/products', label: 'Produk', icon: IconBox },
-    { link: '/admin/categories', label: 'Kategori', icon: IconTags },
-  ], []);
+  const data = useMemo(() => {
+    const base = [
+      { link: '/admin', label: 'Dashboard', icon: IconGauge },
+      { link: '/admin/products', label: 'Produk', icon: IconBox },
+      { link: '/admin/categories', label: 'Kategori', icon: IconTags },
+    ];
+    if (canManage) {
+      base.push({ link: '/admin/bulk-upload', label: 'Bulk Upload', icon: IconBox });
+      base.push({ link: '/admin/logs', label: 'Log', icon: IconListDetails });
+    }
+    return base;
+  }, [canManage]);
 
   const links = data.map((item) => {
     const isActive = location.pathname.startsWith(item.link);
@@ -39,7 +47,7 @@ const AdminSidebar = () => {
       <div className={classes.navbarMain}>
         <Group className={classes.header} justify="flex-start">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <img src={logoGold} alt="Logo" style={{ height: 64, marginBottom: 10 }} />
+            <img src={logoPutih} alt="Logo" style={{ height: 64, marginBottom: 10 }} />
             <span style={{ fontSize: 24, fontWeight: 800, color: '#fff' }}>Hallo, {roleLabel}</span>
           </div>
         </Group>

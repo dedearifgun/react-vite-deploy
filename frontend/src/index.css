@@ -68,6 +68,7 @@ code {
 
 .admin-content {
   padding: 20px;
+  overflow-x: hidden; /* cegah scroll horizontal pada halaman admin */
 }
 
 .login-form {

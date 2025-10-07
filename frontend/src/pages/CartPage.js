@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Table, Button, Form, Image } from 'react-bootstrap';
 import { getCart, updateQuantity, removeItem, clearCart, buildWhatsAppMessage } from '../utils/cart';
+import { analyticsAPI } from '../utils/api';
 import { Link } from 'react-router-dom';
 import { resolveAssetUrl } from '../utils/assets';
 
@@ -33,11 +34,22 @@ const CartPage = () => {
     }
   };
 
-  const onWhatsAppCheckout = () => {
+  const onWhatsAppCheckout = async () => {
     if (!items.length) return;
     const phone = '6285288010801';
     const text = buildWhatsAppMessage(items);
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    try {
+      await analyticsAPI.trackWhatsAppClick({
+        source: 'cart',
+        cartCount: items.length,
+        itemsCount: items.reduce((s, it) => s + Number(it.quantity || 1), 0),
+        productNames: items.map(it => it.name),
+        page: window.location.pathname,
+      });
+    } catch (err) {
+      console.debug('Tracking WA gagal:', err?.message || err);
+    }
     window.open(url, '_blank');
   };
 

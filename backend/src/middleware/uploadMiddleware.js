@@ -1,6 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 
 // Set storage engine
 const storage = multer.diskStorage({
@@ -73,20 +74,53 @@ exports.uploadProductImages = (req, res, next) => {
       });
     }
 
-    // Normalize files into body fields
-    if (Array.isArray(req.files)) {
+    // Convert to WebP + optional resize, then normalize files into body fields
+    (async () => {
+      if (!Array.isArray(req.files) || !req.files.length) {
+        return next();
+      }
+
       const imagesByColor = {};
       const additionalImages = [];
       const mainImages = [];
 
+      const SIZES = [
+        { key: 'thumb', width: 320 },
+        { key: 'medium', width: 800 },
+        { key: 'large', width: 1600 },
+      ];
+
       for (const file of req.files) {
-        const url = `/uploads/${file.filename}`;
+        const inputPath = file.path;
+        let largeUrl = '';
+        try {
+          const parsed = path.parse(inputPath);
+          // Hasilkan 3 ukuran file webp
+          for (const s of SIZES) {
+            const webpName = `${parsed.name}-${s.key}.webp`;
+            const outputPath = path.join(parsed.dir, webpName);
+            await sharp(inputPath)
+              .rotate()
+              .resize({ width: s.width, withoutEnlargement: true })
+              .webp({ quality: 82 })
+              .toFile(outputPath);
+            if (s.key === 'large') {
+              largeUrl = `/uploads/${webpName}`;
+              file.filename = webpName;
+              file.path = outputPath;
+            }
+          }
+          try { fs.unlinkSync(inputPath); } catch {}
+        } catch (convErr) {
+          console.error('Konversi multi-ukuran WebP gagal, gunakan file asli:', convErr.message);
+        }
+
+        const url = largeUrl || `/uploads/${file.filename}`;
         if (file.fieldname === 'image') {
           mainImages.push(url);
         } else if (file.fieldname === 'additionalImages') {
           additionalImages.push(url);
         } else {
-          // Dynamic color field: colorImages_<color>
           const match = file.fieldname.match(/^colorImages_(.+)$/);
           if (match) {
             const color = match[1];
@@ -107,9 +141,9 @@ exports.uploadProductImages = (req, res, next) => {
       if (Object.keys(imagesByColor).length) {
         req.body.imagesByColor = imagesByColor;
       }
-    }
 
-    next();
+      next();
+    })();
   });
 };
 
@@ -117,12 +151,41 @@ exports.uploadProductImages = (req, res, next) => {
 exports.uploadCategoryImage = (req, res, next) => {
   const uploadSingle = upload.single('image');
 
-  uploadSingle(req, res, function (err) {
+  uploadSingle(req, res, async function (err) {
     if (err) {
       return res.status(400).json({
         success: false,
         message: err.message
       });
+    }
+    try {
+      if (req.file && req.file.path) {
+        const SIZES = [
+          { key: 'thumb', width: 320 },
+          { key: 'medium', width: 800 },
+          { key: 'large', width: 1600 },
+        ];
+        const parsed = path.parse(req.file.path);
+        let largeUrl = '';
+        for (const s of SIZES) {
+          const webpName = `${parsed.name}-${s.key}.webp`;
+          const outputPath = path.join(parsed.dir, webpName);
+          await sharp(req.file.path)
+            .rotate()
+            .resize({ width: s.width, withoutEnlargement: true })
+            .webp({ quality: 82 })
+            .toFile(outputPath);
+          if (s.key === 'large') {
+            req.file.filename = webpName;
+            req.file.path = outputPath;
+            largeUrl = `/uploads/${webpName}`;
+          }
+        }
+        try { fs.unlinkSync(req.file.path); } catch {}
+        req.body.imageUrl = largeUrl || `/uploads/${req.file.filename}`;
+      }
+    } catch (convErr) {
+      console.error('Konversi WebP multi-ukuran kategori gagal:', convErr.message);
     }
     next();
   });

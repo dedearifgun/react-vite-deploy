@@ -74,10 +74,16 @@ const SearchBox = () => {
       <style>{`
         .searchbox { position: relative; }
         .searchbox-input {
-          height: 32px; width: 100%; border: 1px solid #d1d5db; border-radius: 16px; padding: 0 12px; font-size: 0.9rem;
-          background: rgba(255,255,255,0.9);
+          height: 32px; width: 100%; border: 1px solid rgba(255,255,255,0.6); border-radius: 16px; padding: 0 12px; font-size: 0.9rem;
+          background: transparent; color: #fff;
         }
-        .searchbox-input:focus { outline: none; border-color: #9ca3af; }
+        .searchbox-input::placeholder { color: #fff; opacity: 0.9; }
+        .searchbox-input:focus { outline: none; border-color: #fff; }
+        /* Saat navbar dalam mode scrolled (latar putih), sesuaikan agar tetap terbaca */
+        .text-navbar.scrolled .searchbox-input {
+          border-color: #d1d5db; color: #111827; background: transparent;
+        }
+        .text-navbar.scrolled .searchbox-input::placeholder { color: #6b7280; }
         .searchbox-dropdown {
           position: absolute; top: 36px; right: 0; width: 420px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);
           z-index: 1000; max-height: 60vh; overflow: auto;

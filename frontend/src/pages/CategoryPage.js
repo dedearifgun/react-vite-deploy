@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import CategoryFilters from '../components/CategoryFilters';
 import { productAPI, categoryAPI } from '../utils/api';
+import { Helmet } from 'react-helmet-async';
+import { resolveAssetUrlSized } from '../utils/assets';
 
 const CategoryPage = () => {
   const { gender, category } = useParams(); // category as slug or 'all'
@@ -19,6 +21,7 @@ const CategoryPage = () => {
   const [maxPrice, setMaxPrice] = useState('');
   const [pagination, setPagination] = useState({});
   const [total, setTotal] = useState(0);
+  const prefetchRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +67,32 @@ const CategoryPage = () => {
     fetchData();
   }, [gender, category, apiGender, page, limit, sort, minPrice, maxPrice]);
 
+  // Prefetch next page when available
+  useEffect(() => {
+    const doPrefetch = async () => {
+      try {
+        if (!pagination.next) return;
+        let categoryId = null;
+        const found = categories.find(c => c.slug === (selectedCategory !== 'all' ? selectedCategory : ''));
+        categoryId = found?._id || null;
+        const params = categoryId ? { gender: apiGender, category: categoryId } : { gender: apiGender };
+        const nextRes = await productAPI.getProducts({
+          ...params,
+          page: page + 1,
+          limit,
+          sort,
+          ...(minPrice ? { minPrice } : {}),
+          ...(maxPrice ? { maxPrice } : {})
+        });
+        prefetchRef.current = nextRes?.data || null;
+      } catch (e) {
+        prefetchRef.current = null;
+      }
+    };
+    doPrefetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.next, page, limit, sort, selectedCategory, apiGender, minPrice, maxPrice]);
+
   const handleSelectCategory = (slug) => {
     setSelectedCategory(slug);
     const target = slug === 'all' ? `/category/${gender}/all` : `/category/${gender}/${slug}`;
@@ -72,11 +101,36 @@ const CategoryPage = () => {
 
   const genderTitle = gender === 'pria' ? 'Pria' : gender === 'wanita' ? 'Wanita' : 'Aksesoris';
   const heroClass = gender === 'pria' ? 'category-hero--pria' : gender === 'wanita' ? 'category-hero--wanita' : 'category-hero--aksesoris';
+  const currentCategory = categories.find(c => c.slug === (category && category !== 'all' ? category : '')) || null;
+  const ogDesc = currentCategory?.description || `Belanja koleksi ${genderTitle} kualitas tertinggi dengan harga jujur.`;
+  const ogImage = currentCategory?.imageUrl || '';
 
   return (
-    <Container className="py-4 with-navbar-offset">
-      <Row className="mb-4">
-        <Col lg={3} md={4} className="mb-3 mb-md-0">
+    <Container className="py-4 with-navbar-offset px-3 px-lg-4">
+      <Helmet>
+        <title>Koleksi {genderTitle} | Narpati Leather</title>
+        <meta name="description" content={`Belanja koleksi ${genderTitle} kualitas tertinggi dengan harga jujur.`} />
+        <link rel="canonical" href={`${window.location.origin}/category/${gender}/${category || 'all'}`} />
+        <meta property="og:title" content={`Koleksi ${genderTitle} | Narpati Leather`} />
+        <meta property="og:description" content={ogDesc} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${window.location.origin}/category/${gender}/${category || 'all'}`} />
+        {ogImage ? (<meta property="og:image" content={resolveAssetUrlSized(ogImage, 'large')} />) : null}
+        <meta name="twitter:card" content="summary_large_image" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Beranda', item: `${window.location.origin}/` },
+              { '@type': 'ListItem', position: 2, name: genderTitle, item: `${window.location.origin}/category/${gender}/all` },
+              ...(category && category !== 'all' ? [{ '@type': 'ListItem', position: 3, name: category, item: `${window.location.origin}/category/${gender}/${category}` }] : [])
+            ]
+          })}
+        </script>
+      </Helmet>
+      <Row className="mb-3 g-2">
+        <Col lg={2} md={3} className="mb-3 mb-md-0">
           <CategoryFilters
             categories={categories}
             selectedCategory={selectedCategory}
@@ -84,7 +138,7 @@ const CategoryPage = () => {
             genderTitle={genderTitle}
           />
         </Col>
-        <Col lg={9} md={8}>
+        <Col lg={10} md={9}>
           {/* Banner kategori dengan judul & tagline di dalam foto */}
           <div className={`category-hero ${heroClass}`} aria-label={`Banner koleksi ${genderTitle}`}>
             <div className="category-hero__overlay">
@@ -93,39 +147,11 @@ const CategoryPage = () => {
             </div>
           </div>
 
-          {/* Controls: sorting, price filter, pagination */}
-          <div className="category-controls d-flex align-items-center justify-content-between py-2 px-2 mb-3">
-            <div className="d-flex align-items-center gap-2">
-              <label className="me-1 text-gray-600" htmlFor="sortSelect">Urutkan</label>
-              <select id="sortSelect" className="form-select form-select-sm" style={{ maxWidth: 180 }} value={sort} onChange={(e) => { setPage(1); setSort(e.target.value); }}>
-                <option value="newest">Terbaru</option>
-                <option value="oldest">Terlama</option>
-                <option value="price_asc">Harga: rendah → tinggi</option>
-                <option value="price_desc">Harga: tinggi → rendah</option>
-                <option value="name_asc">Nama: A → Z</option>
-                <option value="name_desc">Nama: Z → A</option>
-              </select>
-              <label className="ms-3 me-1 text-gray-600" htmlFor="limitSelect">Per halaman</label>
-              <select id="limitSelect" className="form-select form-select-sm" style={{ maxWidth: 120 }} value={limit} onChange={(e) => { setPage(1); setLimit(Number(e.target.value)); }}>
-                <option value={6}>6</option>
-                <option value={9}>9</option>
-                <option value={12}>12</option>
-              </select>
-              <label className="ms-3 me-1 text-gray-600">Harga</label>
-              <input type="number" className="form-control form-control-sm" placeholder="Min" value={minPrice} onChange={(e) => { setPage(1); setMinPrice(e.target.value); }} style={{ width: 90 }} />
-              <span className="mx-1 text-gray-500">–</span>
-              <input type="number" className="form-control form-control-sm" placeholder="Max" value={maxPrice} onChange={(e) => { setPage(1); setMaxPrice(e.target.value); }} style={{ width: 90 }} />
-            </div>
-            <div className="d-flex align-items-center gap-2">
-              <span className="text-gray-600" style={{ fontSize: '0.9rem' }}>Halaman {page}{total ? ` dari ${Math.ceil(total / limit)}` : ''}</span>
-              <button className="btn btn-outline-secondary btn-sm" disabled={!pagination.prev} onClick={() => setPage((p) => Math.max(1, p - 1))}>Sebelumnya</button>
-              <button className="btn btn-outline-secondary btn-sm" disabled={!pagination.next} onClick={() => setPage((p) => p + 1)}>Berikutnya</button>
-            </div>
-          </div>
+          {/* Controls bar dihapus sesuai permintaan */}
           {loading ? (
             <Row>
               {Array.from({ length: limit }).map((_, idx) => (
-                <Col key={idx} lg={4} md={6} sm={6} className="mb-4">
+                <Col key={idx} lg={3} md={4} sm={6} className="mb-4 d-flex">
                   <div className="skeleton-card">
                     <div className="skeleton-img" />
                     <div className="skeleton-text" style={{ width: '60%' }} />
@@ -138,7 +164,7 @@ const CategoryPage = () => {
             <Row>
               {products.length > 0 ? (
                 products.map(product => (
-                  <Col key={product._id || product.id} lg={4} md={6} sm={6} className="mb-4">
+                  <Col key={product._id || product.id} lg={3} md={4} sm={6} className="mb-4 d-flex">
                     <ProductCard product={product} />
                   </Col>
                 ))

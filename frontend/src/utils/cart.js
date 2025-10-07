@@ -65,7 +65,7 @@ export const buildWhatsAppMessage = (items) => {
   return `Halo, saya ingin memesan berikut:\n${lines.join('\n')}\nTotal item: ${totalItems}`;
 };
 
-export default {
+const cart = {
   getCart,
   getCount,
   clearCart,
@@ -74,3 +74,5 @@ export default {
   removeItem,
   buildWhatsAppMessage,
 };
+
+export default cart;

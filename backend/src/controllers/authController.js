@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const { logAudit } = require('../utils/audit');
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -67,6 +68,18 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Catat audit login (waktu tercatat di createdAt)
+    try {
+      // Attach user sementara agar util audit bisa mengambil identitas
+      req.user = user;
+      await logAudit(req, {
+        action: 'login',
+        model: 'Auth',
+        itemId: user._id?.toString(),
+        details: `Login dari IP ${req.ip || '-'}; UA: ${req.headers['user-agent'] || '-'}`,
+      });
+    } catch (_) {}
+
     sendTokenResponse(user, 200, res);
   } catch (error) {
     res.status(500).json({
@@ -101,10 +114,24 @@ exports.getMe = async (req, res) => {
 // @route   GET /api/auth/logout
 // @access  Private
 exports.logout = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Berhasil logout'
-  });
+  try {
+    // Catat audit logout
+    try {
+      await logAudit(req, {
+        action: 'logout',
+        model: 'Auth',
+        itemId: req.user?._id?.toString(),
+        details: `Logout dari IP ${req.ip || '-'}; UA: ${req.headers['user-agent'] || '-'}`,
+      });
+    } catch (_) {}
+
+    res.status(200).json({
+      success: true,
+      message: 'Berhasil logout'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal logout', error: error.message });
+  }
 };
 
 // Helper function to get token from model, create cookie and send response

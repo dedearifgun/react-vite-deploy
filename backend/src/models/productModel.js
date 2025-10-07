@@ -6,6 +6,12 @@ const ProductSchema = new mongoose.Schema({
     required: [true, 'Nama produk harus diisi'],
     trim: true
   },
+  // Urutan manual untuk penataan list produk
+  order: {
+    type: Number,
+    default: 0,
+    index: true
+  },
   code: {
     type: String,
     required: [true, 'Kode produk harus diisi'],
@@ -24,6 +30,12 @@ const ProductSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: [true, 'Kategori produk harus diisi']
+  },
+  // Subkategori (opsional) yang berasal dari daftar di Category.subcategories
+  subcategory: {
+    type: String,
+    trim: true,
+    default: ''
   },
   gender: {
     type: String,
@@ -61,6 +73,11 @@ const ProductSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  status: {
+    type: String,
+    enum: ['draft', 'published', 'archived'],
+    default: 'published'
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -69,5 +86,8 @@ const ProductSchema = new mongoose.Schema({
 
 // Menambahkan index untuk pencarian
 ProductSchema.index({ name: 'text', description: 'text' });
+
+// Index ringan untuk query berdasarkan kategori + subkategori
+ProductSchema.index({ category: 1, subcategory: 1 });
 
 module.exports = mongoose.model('Product', ProductSchema);

@@ -3,7 +3,8 @@
 .navbar {
   width: 260px;
   min-height: 100vh;
-  background: linear-gradient(180deg, #1f6feb 0%, #0b2c61 100%);
+  /* Ubah background ke gradasi abu-abu */
+  background: linear-gradient(180deg, #6b7280 0%, #374151 100%);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -51,7 +52,8 @@
 }
 
 .footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  /* Hilangkan garis putih divider agar konsisten dengan item lain */
+  border-top: none;
   padding-top: 12px;
 }
 

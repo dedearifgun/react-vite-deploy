@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
+import { Helmet } from 'react-helmet-async';
+import { Container, Table, Button, Modal, Form, Card } from 'react-bootstrap';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { FaEdit, FaTrash, FaPlus, FaTimes } from 'react-icons/fa';
 import AdminSidebar from '../../components/AdminSidebar';
 import { categoryAPI } from '../../utils/api';
 import SuccessToast from '../../components/SuccessToast';
+import ErrorNotice from '../../components/ErrorNotice';
 
 const AdminCategories = () => {
   const currentUser = (() => {
@@ -19,9 +21,10 @@ const AdminCategories = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [subInput, setSubInput] = useState('');
   // Toast state
-  const [toast, setToast] = useState({ show: false, title: '', message: '' });
+  const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'success' });
   const showToast = (title, message) => {
-    setToast({ show: true, title, message });
+    const type = String(title || '').toLowerCase().includes('gagal') ? 'error' : 'success';
+    setToast({ show: true, title, message, type });
     // Auto hide after 3s
     setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
   };
@@ -168,76 +171,83 @@ const AdminCategories = () => {
 
   return (
     <div className="admin-layout">
+      <Helmet>
+        <title>Admin Kategori | Narpati Leather</title>
+        <meta name="robots" content="noindex,nofollow" />
+        <link rel="canonical" href={`${window.location.origin}/admin/categories`} />
+      </Helmet>
       <AdminSidebar />
       <div className="admin-content">
         <Container fluid>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2 className="admin-title">Manajemen Kategori</h2>
-          <div className="d-flex gap-2">
-            <Button variant="secondary" onClick={saveOrder}>
-              Simpan Urutan
-            </Button>
-            <Button variant="primary" onClick={openAddModal}>
-              <FaPlus className="me-2" /> Tambah Kategori
-            </Button>
+            <div className="d-flex gap-2">
+              <Button variant="secondary" onClick={saveOrder}>Simpan Urutan</Button>
+              <Button variant="primary" onClick={openAddModal}>
+                <FaPlus className="me-2" /> Tambah Kategori
+              </Button>
+            </div>
           </div>
-        </div>
-        
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <Table striped bordered hover responsive>
-            <thead>
-              <tr>
-                <th>Nama</th>
-                <th>Gender</th>
-                <th>Sub Kategori</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((category, idx) => (
-                <tr
-                  key={category._id}
-                  draggable
-                  onDragStart={() => onDragStart(idx)}
-                  onDragOver={onDragOver}
-                  onDrop={() => onDrop(idx)}
-                  style={{ cursor: 'move' }}
-                >
-                  <td>{category.name}</td>
-                  <td>
-                    {category.gender === 'men' && 'Pria'}
-                    {category.gender === 'women' && 'Wanita'}
-                    {category.gender === 'unisex' && 'Aksesoris'}
-                    {category.gender === 'pria' && 'Pria'}
-                    {category.gender === 'wanita' && 'Wanita'}
-                  </td>
-                  <td>{(category.subcategories || []).join(', ') || '-'}</td>
-                  <td>
-                    <Button 
-                      variant="warning" 
-                      size="sm" 
-                      className="me-2"
-                      onClick={() => openEditModal(category)}
-                    >
-                      <FaEdit /> Edit
-                    </Button>
-                    {isAdmin && (
-                      <Button 
-                        variant="danger" 
-                        size="sm"
-                        onClick={() => handleDelete(category._id)}
+
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <Card>
+              <Card.Body>
+                <Table responsive hover>
+                  <thead>
+                    <tr>
+                      <th>Nama</th>
+                      <th>Gender</th>
+                      <th>Sub Kategori</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map((category, idx) => (
+                      <tr
+                        key={category._id}
+                        draggable
+                        onDragStart={() => onDragStart(idx)}
+                        onDragOver={onDragOver}
+                        onDrop={() => onDrop(idx)}
+                        style={{ cursor: 'move' }}
                       >
-                        <FaTrash /> Hapus
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
+                        <td>{category.name}</td>
+                        <td>
+                          {category.gender === 'men' && 'Pria'}
+                          {category.gender === 'women' && 'Wanita'}
+                          {category.gender === 'unisex' && 'Aksesoris'}
+                          {category.gender === 'pria' && 'Pria'}
+                          {category.gender === 'wanita' && 'Wanita'}
+                        </td>
+                        <td>{(category.subcategories || []).join(', ') || '-'}</td>
+                        <td>
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            className="me-2"
+                            onClick={() => openEditModal(category)}
+                          >
+                            <FaEdit />
+                          </Button>
+                          {isAdmin && (
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => handleDelete(category._id)}
+                            >
+                              <FaTrash />
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </Card.Body>
+            </Card>
+          )}
 
         {/* Modal Tambah/Edit Kategori */}
         <Modal show={showModal} onHide={() => setShowModal(false)}>
@@ -330,14 +340,22 @@ const AdminCategories = () => {
           }}
         />
         )}
-        {/* Success Toast notification */}
+        {/* Notification area (success or error) */}
         <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1060 }}>
-          <SuccessToast
-            show={toast.show}
-            title={toast.title}
-            message={toast.message}
-            onClose={() => setToast(prev => ({ ...prev, show: false }))}
-          />
+          {toast.type === 'error' ? (
+            <ErrorNotice
+              show={toast.show}
+              message={toast.message || 'Oops! Something went terribly wrong.'}
+              onClose={() => setToast(prev => ({ ...prev, show: false }))}
+            />
+          ) : (
+            <SuccessToast
+              show={toast.show}
+              title={toast.title}
+              message={toast.message}
+              onClose={() => setToast(prev => ({ ...prev, show: false }))}
+            />
+          )}
         </div>
         </Container>
       </div>

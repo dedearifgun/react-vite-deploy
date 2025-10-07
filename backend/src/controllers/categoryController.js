@@ -1,6 +1,7 @@
 const Category = require('../models/categoryModel');
 const path = require('path');
 const fs = require('fs');
+const { logAudit } = require('../utils/audit');
 
 // @desc    Get all categories
 // @route   GET /api/categories
@@ -74,6 +75,9 @@ exports.createCategory = async (req, res) => {
 
     const category = await Category.create(req.body);
 
+    // Audit log
+    await logAudit(req, { action: 'create', model: 'Category', itemId: category._id?.toString(), details: { name: category.name } });
+
     res.status(201).json({
       success: true,
       data: category
@@ -122,6 +126,9 @@ exports.updateCategory = async (req, res) => {
       runValidators: true
     });
 
+    // Audit log
+    await logAudit(req, { action: 'update', model: 'Category', itemId: category._id?.toString(), details: { updatedFields: Object.keys(req.body || {}) } });
+
     res.status(200).json({
       success: true,
       data: category
@@ -167,6 +174,9 @@ exports.reorderCategories = async (req, res) => {
     await Category.bulkWrite(bulkOps);
     const categories = await Category.find({}).sort({ order: 1, name: 1 });
 
+    // Audit log
+    await logAudit(req, { action: 'reorder', model: 'Category', itemId: 'bulk', details: { count: bulkOps.length } });
+
     res.status(200).json({
       success: true,
       message: 'Urutan kategori berhasil disimpan',
@@ -204,6 +214,9 @@ exports.deleteCategory = async (req, res) => {
     }
 
     await category.deleteOne();
+
+    // Audit log
+    await logAudit(req, { action: 'delete', model: 'Category', itemId: category._id?.toString(), details: { name: category.name } });
 
     res.status(200).json({
       success: true,

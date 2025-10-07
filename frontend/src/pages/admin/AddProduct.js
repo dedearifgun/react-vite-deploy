@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Container, Row, Col, Card, Table, Button, Modal, Form } from 'react-bootstrap';
 import AdminSidebar from '../../components/AdminSidebar';
 import { productAPI, categoryAPI } from '../../utils/api';
@@ -17,13 +18,15 @@ const AdminProducts = () => {
     name: '',
     description: '',
     category: '', // category id
+    subcategory: '',
     gender: 'pria',
     price: '',
     imageFile: null,
     sizes: [],
     colors: [],
     stock: 7,
-    variants: []
+    variants: [],
+    status: 'published'
   });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -52,7 +55,7 @@ const AdminProducts = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setCurrentProduct({ _id: '', name: '', description: '', category: '', gender: 'pria', price: '', imageFile: null, sizes: [], colors: [], stock: 7 });
+    setCurrentProduct({ _id: '', name: '', description: '', category: '', subcategory: '', gender: 'pria', price: '', imageFile: null, sizes: [], colors: [], stock: 7, status: 'published' });
     setSizeInput('');
     setColorInput('');
     setColorImagesFiles({});
@@ -67,6 +70,7 @@ const AdminProducts = () => {
         name: product.name || '',
         description: product.description || '',
         category: typeof product.category === 'object' ? product.category?._id : product.category || '',
+        subcategory: product.subcategory || '',
         gender: product.gender || 'pria',
         price: product.price || '',
         imageFile: null,
@@ -74,7 +78,8 @@ const AdminProducts = () => {
         colors: product.colors || [],
         variants: product.variants || [],
         imagesByColor: product.imagesByColor || {},
-        stock: product.stock ?? 7
+        stock: product.stock ?? 7,
+        status: product.status || 'published'
       });
       setIsEditing(true);
     } else {
@@ -87,7 +92,8 @@ const AdminProducts = () => {
     const { name, value } = e.target;
     setCurrentProduct(prev => ({
       ...prev,
-      [name]: name === 'price' ? parseFloat(value) || '' : value
+      [name]: name === 'price' ? parseFloat(value) || '' : value,
+      ...(name === 'category' ? { subcategory: '' } : {})
     }));
   };
 
@@ -167,8 +173,10 @@ const AdminProducts = () => {
         fd.append('name', currentProduct.name);
         fd.append('description', currentProduct.description || '');
         fd.append('category', currentProduct.category);
+        if (currentProduct.subcategory) fd.append('subcategory', currentProduct.subcategory);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
+        fd.append('status', currentProduct.status || 'published');
         // stok dihapus dari form; jangan kirim
         // main images: allow multiple; server will set pertama sebagai imageUrl
         (currentProduct.mainImagesFiles || (currentProduct.imageFile ? [currentProduct.imageFile] : [])).forEach(f => fd.append('image', f));
@@ -191,8 +199,10 @@ const AdminProducts = () => {
         fd.append('name', currentProduct.name);
         fd.append('description', currentProduct.description || '');
         fd.append('category', currentProduct.category);
+        if (currentProduct.subcategory) fd.append('subcategory', currentProduct.subcategory);
         fd.append('gender', currentProduct.gender);
         fd.append('price', currentProduct.price);
+        fd.append('status', currentProduct.status || 'published');
         // stok dihapus dari form; jangan kirim
         (currentProduct.sizes || []).forEach(s => fd.append('sizes[]', s));
         (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
@@ -222,6 +232,11 @@ const AdminProducts = () => {
 
   return (
     <div className="admin-layout">
+      <Helmet>
+        <title>Admin Tambah Produk | Narpati Leather</title>
+        <meta name="robots" content="noindex,nofollow" />
+        <link rel="canonical" href={`${window.location.origin}/admin/products/add`} />
+      </Helmet>
       <AdminSidebar />
       <div className="admin-content">
         <Container fluid>
@@ -312,7 +327,7 @@ const AdminProducts = () => {
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
             <Row>
-              <Col md={6}>
+              <Col md={8}>
                 <Form.Group className="mb-3">
                   <Form.Label>Nama Produk</Form.Label>
                   <Form.Control 
@@ -324,6 +339,25 @@ const AdminProducts = () => {
                   />
                 </Form.Group>
               </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Select
+                    name="status"
+                    value={currentProduct.status}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            {/* Kategori dan Sub Kategori berdampingan */}
+            <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Kategori</Form.Label>
@@ -338,6 +372,28 @@ const AdminProducts = () => {
                       <option key={cat._id} value={cat._id}>{cat.name}</option>
                     ))}
                   </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Sub Kategori</Form.Label>
+                  {(() => {
+                    const selected = categories.find(c => c._id === currentProduct.category);
+                    const subs = selected?.subcategories || [];
+                    return (
+                      <Form.Select
+                        name="subcategory"
+                        value={currentProduct.subcategory || ''}
+                        onChange={handleInputChange}
+                        disabled={!selected || subs.length === 0}
+                      >
+                        <option value="">{subs.length ? 'Pilih Sub Kategori' : 'Tidak ada sub kategori'}</option>
+                        {subs.map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </Form.Select>
+                    );
+                  })()}
                 </Form.Group>
               </Col>
             </Row>
@@ -384,6 +440,8 @@ const AdminProducts = () => {
               </Col>
             </Row>
 
+            {/* Status dipindah ke baris Nama Produk */}
+
             <Form.Group className="mb-3">
               <Form.Label>Upload Gambar Produk (bisa lebih dari 1)</Form.Label>
               <Form.Control 
@@ -400,53 +458,57 @@ const AdminProducts = () => {
 
             {/* Gambar tambahan dihapus sesuai permintaan */}
 
-            {/* Ukuran Sepatu */}
-            <Form.Group className="mb-3">
-              <Form.Label>Ukuran Nomor</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Masukkan ukuran lalu tekan Enter, misal: 23"
-                value={sizeInput}
-                onChange={(e) => setSizeInput(e.target.value)}
-                onKeyDown={addSizeFromInput}
-              />
-              <div className="mt-2 d-flex flex-wrap gap-2">
-                {(currentProduct.sizes || []).map((s) => (
-                  <span key={s} className="badge bg-primary">
-                    {s}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-link text-white ms-2 p-0"
-                      onClick={() => removeSize(s)}
-                    >x</button>
-                  </span>
-                ))}
-              </div>
-            </Form.Group>
-
-            {/* Warna dan gambar per warna */}
-            <Form.Group className="mb-3">
-              <Form.Label>Warna Produk</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Masukkan warna lalu tekan Enter, misal: Coklat"
-                value={colorInput}
-                onChange={(e) => setColorInput(e.target.value)}
-                onKeyDown={addColorFromInput}
-              />
-              <div className="mt-2 d-flex flex-wrap gap-2">
-                {(currentProduct.colors || []).map((c) => (
-                  <span key={c} className="badge bg-secondary">
-                    {c}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-link text-white ms-2 p-0"
-                      onClick={() => removeColor(c)}
-                    >x</button>
-                  </span>
-                ))}
-              </div>
-            </Form.Group>
+            {/* Warna dan Ukuran berdampingan */}
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Warna Produk</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Masukkan warna lalu tekan Enter, misal: Coklat"
+                    value={colorInput}
+                    onChange={(e) => setColorInput(e.target.value)}
+                    onKeyDown={addColorFromInput}
+                  />
+                  <div className="mt-2 d-flex flex-wrap gap-2">
+                    {(currentProduct.colors || []).map((c) => (
+                      <span key={c} className="badge bg-secondary">
+                        {c}
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-link text-white ms-2 p-0"
+                          onClick={() => removeColor(c)}
+                        >x</button>
+                      </span>
+                    ))}
+                  </div>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Ukuran Nomor</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Masukkan ukuran lalu tekan Enter, misal: 23"
+                    value={sizeInput}
+                    onChange={(e) => setSizeInput(e.target.value)}
+                    onKeyDown={addSizeFromInput}
+                  />
+                  <div className="mt-2 d-flex flex-wrap gap-2">
+                    {(currentProduct.sizes || []).map((s) => (
+                      <span key={s} className="badge bg-primary">
+                        {s}
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-link text-white ms-2 p-0"
+                          onClick={() => removeSize(s)}
+                        >x</button>
+                      </span>
+                    ))}
+                  </div>
+                </Form.Group>
+              </Col>
+            </Row>
 
             {(currentProduct.colors || []).map((c) => {
               const localFile = colorImagesFiles[c];
@@ -474,11 +536,11 @@ const AdminProducts = () => {
             })}
 
             {/* Stok dihapus sesuai permintaan */}
-            {/* Varian: SKU & Stok per kombinasi ukuran-warna */}
-            {(currentProduct.sizes?.length || 0) > 0 && (currentProduct.colors?.length || 0) > 0 && (
+            {/* Varian: Stok per kombinasi ukuran-warna atau hanya per warna */}
+            {(currentProduct.colors?.length || 0) > 0 && (
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-2">
-                  <h6 className="mb-0">Varian (SKU & Stok)</h6>
+                  <h6 className="mb-0">Varian (Stok)</h6>
                   <small className="text-muted">Stok total akan dijumlah dari varian</small>
                 </div>
                 <div className="table-responsive">
@@ -492,52 +554,83 @@ const AdminProducts = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {currentProduct.sizes.map((size) => (
-                        currentProduct.colors.map((color) => {
-                          const existing = (currentProduct.variants || []).find(v => v.size === size && v.color === color) || { sku: '', stock: 0 };
-                          return (
-                            <tr key={`${size}-${color}`}>
-                              <td>{size}</td>
-                              <td>{color}</td>
-                              <td>
-                                <Form.Control
-                                  type="text"
-                                  value={existing.sku}
-                                  onChange={(e) => {
-                                    const sku = e.target.value;
-                                    setCurrentProduct(prev => {
-                                      const variants = [...(prev.variants || [])];
-                                      const idx = variants.findIndex(v => v.size === size && v.color === color);
-                                      if (idx >= 0) variants[idx] = { ...variants[idx], sku };
-                                      else variants.push({ size, color, sku, stock: 0 });
-                                      return { ...prev, variants };
-                                    });
-                                  }}
-                                  placeholder={`SKU ${size}-${color}`}
-                                />
-                              </td>
-                              <td style={{ maxWidth: 140 }}>
-                                <Form.Control
-                                  type="number"
-                                  min={0}
-                                  value={existing.stock}
-                                  onChange={(e) => {
-                                    const stock = Number(e.target.value || 0);
-                                    setCurrentProduct(prev => {
-                                      const variants = [...(prev.variants || [])];
-                                      const idx = variants.findIndex(v => v.size === size && v.color === color);
-                                      if (idx >= 0) variants[idx] = { ...variants[idx], stock };
-                                      else variants.push({ size, color, sku: '', stock });
-                                      return { ...prev, variants };
-                                    });
-                                  }}
-                                  placeholder="0"
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })
-                      ))}
+                      {(currentProduct.sizes?.length || 0) > 0
+                        ? (
+                          currentProduct.sizes.map((size) => (
+                            currentProduct.colors.map((color) => {
+                              const existing = (currentProduct.variants || []).find(v => v.size === size && v.color === color) || { stock: 0 };
+                              return (
+                                <tr key={`${size}-${color}`}>
+                                  <td>{size}</td>
+                                  <td>{color}</td>
+                                  <td style={{ maxWidth: 160 }}>
+                                    <Form.Control
+                                      type="text"
+                                      value={existing.sku || 'Auto saat simpan'}
+                                      readOnly
+                                      plaintext
+                                    />
+                                  </td>
+                                  <td style={{ maxWidth: 140 }}>
+                                    <Form.Control
+                                      type="number"
+                                      min={0}
+                                      value={existing.stock}
+                                      onChange={(e) => {
+                                        const stock = Number(e.target.value || 0);
+                                        setCurrentProduct(prev => {
+                                          const variants = [...(prev.variants || [])];
+                                          const idx = variants.findIndex(v => v.size === size && v.color === color);
+                                          if (idx >= 0) variants[idx] = { ...variants[idx], stock };
+                                          else variants.push({ size, color, stock });
+                                          return { ...prev, variants };
+                                        });
+                                      }}
+                                      placeholder="0"
+                                    />
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          ))
+                        )
+                        : (
+                          currentProduct.colors.map((color) => {
+                            const existing = (currentProduct.variants || []).find(v => (v.size == null || v.size === '') && v.color === color) || { stock: 0 };
+                            return (
+                              <tr key={`no-size-${color}`}>
+                                <td>-</td>
+                                <td>{color}</td>
+                                <td style={{ maxWidth: 160 }}>
+                                  <Form.Control
+                                    type="text"
+                                    value={existing.sku || 'Auto saat simpan'}
+                                    readOnly
+                                    plaintext
+                                  />
+                                </td>
+                                <td style={{ maxWidth: 140 }}>
+                                  <Form.Control
+                                    type="number"
+                                    min={0}
+                                    value={existing.stock}
+                                    onChange={(e) => {
+                                      const stock = Number(e.target.value || 0);
+                                      setCurrentProduct(prev => {
+                                        const variants = [...(prev.variants || [])];
+                                        const idx = variants.findIndex(v => (v.size == null || v.size === '') && v.color === color);
+                                        if (idx >= 0) variants[idx] = { ...variants[idx], stock };
+                                        else variants.push({ size: null, color, stock });
+                                        return { ...prev, variants };
+                                      });
+                                    }}
+                                    placeholder="0"
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                     </tbody>
                   </table>
                 </div>
