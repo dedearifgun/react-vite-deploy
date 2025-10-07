@@ -248,8 +248,7 @@ body .navbar.navbar-transparent {
 /* Kotak gambar seragam dengan rasio tetap dan cropping rapi */
 .pc-img-wrapper {
   position: relative;
-  aspect-ratio: 4 / 3; /* konsisten seperti contoh */
-  height: auto;
+  height: 220px; /* tinggi tetap agar baris warna sejajar */
   width: 100%;
   background: #fff;
   padding: 8px; /* margin dalam seragam agar semua tampak sama */
@@ -266,6 +265,14 @@ body .navbar.navbar-transparent {
   transition: transform 0.2s ease;
 }
 .product-card:hover .pc-img-wrapper img { transform: scale(1.005); }
+
+/* Responsif: sesuaikan tinggi gambar untuk layar kecil/besar */
+@media (max-width: 576px) {
+  .pc-img-wrapper { height: 180px; }
+}
+@media (min-width: 1200px) {
+  .pc-img-wrapper { height: 240px; }
+}
 
 /* Sudut kartu produk lancip */
 .product-card {
@@ -337,11 +344,10 @@ body .navbar.navbar-transparent {
   display: flex;
   align-items: center;
   gap: 6px;
-  opacity: 0; /* sembunyikan visual, tetap reservasi ruang */
-  pointer-events: none;
+  opacity: 1; /* selalu terlihat */
+  pointer-events: auto;
   transition: opacity 0.2s ease;
 }
-.product-card:hover .pc-color-row { opacity: 1; pointer-events: auto; }
 .pc-color-arrow {
   position: absolute; /* tetap di tepi wrapper, bukan foto */
   top: 50%;
