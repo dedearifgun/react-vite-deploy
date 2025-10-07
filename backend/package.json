@@ -8,7 +8,6 @@
     "dev": "nodemon server.js",
     "seed:admin": "node src/scripts/seedAdmin.js",
     "seed:accounts": "node src/scripts/seedUsers.js",
-    "seed:wa-clicks": "node src/scripts/seedWaClicks.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
