@@ -27,11 +27,18 @@
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
   },
+  "devDependencies": {
+    "imagemin": "^9.0.0",
+    "imagemin-jpegtran": "^7.0.0",
+    "imagemin-optipng": "^8.0.0",
+    "imagemin-svgo": "^11.0.0"
+  },
   "scripts": {
     "start": "set PORT=3010 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "compress:images": "node scripts/compressImages.js"
   },
   "eslintConfig": {
     "extends": [
