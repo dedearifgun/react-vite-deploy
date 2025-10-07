@@ -4,18 +4,27 @@ import { Link } from 'react-router-dom';
 import { resolveAssetUrl } from '../utils/assets';
 
 const ProductCard = ({ product }) => {
+  const colorEntries = product?.imagesByColor ? Object.entries(product.imagesByColor) : [];
+  const defaultColorKey = colorEntries.length ? colorEntries[0][0] : '';
+  const hoverColorKey = colorEntries.length > 1 ? colorEntries[1][0] : defaultColorKey;
+  const defaultImage = colorEntries.length ? resolveAssetUrl(colorEntries[0][1]) : resolveAssetUrl(product.imageUrl);
+  const hoverImage = colorEntries.length > 1 ? resolveAssetUrl(colorEntries[1][1]) : defaultImage;
+
   const colorLabel = Array.isArray(product?.colors) && product.colors.length
     ? product.colors[0]
-    : (product?.imagesByColor && Object.keys(product.imagesByColor)[0]) || '';
+    : defaultColorKey;
 
-  const colorEntries = product?.imagesByColor ? Object.entries(product.imagesByColor) : [];
-  const [activeColor, setActiveColor] = useState('');
-  const [previewImage, setPreviewImage] = useState(resolveAssetUrl(product.imageUrl));
+  const [activeColor, setActiveColor] = useState(defaultColorKey);
+  const [previewImage, setPreviewImage] = useState(defaultImage);
 
   return (
     <Link to={`/product/${product._id || product.id}`} className="text-decoration-none product-card-link">
       <Card className="product-card">
-      <div className="pc-img-wrapper">
+      <div
+        className="pc-img-wrapper"
+        onMouseEnter={() => { setPreviewImage(hoverImage); setActiveColor(hoverColorKey); }}
+        onMouseLeave={() => { setPreviewImage(defaultImage); setActiveColor(defaultColorKey); }}
+      >
         <Card.Img 
           variant="top" 
           src={previewImage || resolveAssetUrl(product.imageUrl) || 'https://via.placeholder.com/300x200?text=Produk+Kerajinan+Kulit'} 
@@ -31,7 +40,7 @@ const ProductCard = ({ product }) => {
               src={resolveAssetUrl(url)}
               alt={color}
               onMouseEnter={() => { setPreviewImage(resolveAssetUrl(url)); setActiveColor(color); }}
-              onMouseLeave={() => { setPreviewImage(resolveAssetUrl(product.imageUrl)); setActiveColor(''); }}
+              onMouseLeave={() => { setPreviewImage(defaultImage); setActiveColor(defaultColorKey); }}
             />
           ))}
         </div>
