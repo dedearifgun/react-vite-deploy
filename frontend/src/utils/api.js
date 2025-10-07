@@ -33,6 +33,7 @@ api.interceptors.response.use(
 
 export const productAPI = {
   getProducts: (params = {}) => api.get('/products', { params }),
+  searchProducts: (query) => api.get('/products', { params: { search: query, limit: 5 } }),
   getProduct: (id) => api.get(`/products/${id}`),
   createProduct: (productData) => {
     if (productData && (productData instanceof FormData)) {

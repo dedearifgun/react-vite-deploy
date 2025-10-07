@@ -22,7 +22,8 @@ const AdminProducts = () => {
     imageFile: null,
     sizes: [],
     colors: [],
-    stock: 7
+    stock: 7,
+    variants: []
   });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -71,6 +72,7 @@ const AdminProducts = () => {
         imageFile: null,
         sizes: product.sizes || [],
         colors: product.colors || [],
+        variants: product.variants || [],
         imagesByColor: product.imagesByColor || {},
         stock: product.stock ?? 7
       });
@@ -174,6 +176,7 @@ const AdminProducts = () => {
         (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
         fd.append('sizesJson', JSON.stringify(currentProduct.sizes || []));
         fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
+        fd.append('variantsJson', JSON.stringify(currentProduct.variants || []));
         // tidak kirim additionalImages; server akan menggabungkan sisa gambar utama ke additionalImages
         // color-specific images using fieldname colorImages_<color>
         Object.entries(colorImagesFiles).forEach(([color, file]) => {
@@ -195,6 +198,7 @@ const AdminProducts = () => {
         (currentProduct.colors || []).forEach(c => fd.append('colors[]', c));
         fd.append('sizesJson', JSON.stringify(currentProduct.sizes || []));
         fd.append('colorsJson', JSON.stringify(currentProduct.colors || []));
+        fd.append('variantsJson', JSON.stringify(currentProduct.variants || []));
         (currentProduct.mainImagesFiles || (currentProduct.imageFile ? [currentProduct.imageFile] : [])).forEach(f => fd.append('image', f));
         // tidak kirim additionalImages; server akan menggabungkan sisa gambar utama ke additionalImages
         Object.entries(colorImagesFiles).forEach(([color, file]) => {
@@ -470,6 +474,75 @@ const AdminProducts = () => {
             })}
 
             {/* Stok dihapus sesuai permintaan */}
+            {/* Varian: SKU & Stok per kombinasi ukuran-warna */}
+            {(currentProduct.sizes?.length || 0) > 0 && (currentProduct.colors?.length || 0) > 0 && (
+              <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h6 className="mb-0">Varian (SKU & Stok)</h6>
+                  <small className="text-muted">Stok total akan dijumlah dari varian</small>
+                </div>
+                <div className="table-responsive">
+                  <table className="table table-sm align-middle">
+                    <thead>
+                      <tr>
+                        <th>Ukuran</th>
+                        <th>Warna</th>
+                        <th>SKU</th>
+                        <th>Stok</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentProduct.sizes.map((size) => (
+                        currentProduct.colors.map((color) => {
+                          const existing = (currentProduct.variants || []).find(v => v.size === size && v.color === color) || { sku: '', stock: 0 };
+                          return (
+                            <tr key={`${size}-${color}`}>
+                              <td>{size}</td>
+                              <td>{color}</td>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={existing.sku}
+                                  onChange={(e) => {
+                                    const sku = e.target.value;
+                                    setCurrentProduct(prev => {
+                                      const variants = [...(prev.variants || [])];
+                                      const idx = variants.findIndex(v => v.size === size && v.color === color);
+                                      if (idx >= 0) variants[idx] = { ...variants[idx], sku };
+                                      else variants.push({ size, color, sku, stock: 0 });
+                                      return { ...prev, variants };
+                                    });
+                                  }}
+                                  placeholder={`SKU ${size}-${color}`}
+                                />
+                              </td>
+                              <td style={{ maxWidth: 140 }}>
+                                <Form.Control
+                                  type="number"
+                                  min={0}
+                                  value={existing.stock}
+                                  onChange={(e) => {
+                                    const stock = Number(e.target.value || 0);
+                                    setCurrentProduct(prev => {
+                                      const variants = [...(prev.variants || [])];
+                                      const idx = variants.findIndex(v => v.size === size && v.color === color);
+                                      if (idx >= 0) variants[idx] = { ...variants[idx], stock };
+                                      else variants.push({ size, color, sku: '', stock });
+                                      return { ...prev, variants };
+                                    });
+                                  }}
+                                  placeholder="0"
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>

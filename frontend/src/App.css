@@ -265,6 +265,30 @@ body .navbar.navbar-transparent {
 .pc-overlay-top { display: flex; align-items: center; justify-content: space-between; }
 .pc-title { font-weight: 600; }
 .pc-price { font-weight: 600; }
+
+/* Skeleton loading styles */
+.skeleton-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0;
+  padding: 12px;
+}
+.skeleton-img {
+  height: 240px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+.skeleton-text {
+  height: 16px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
 .pc-overlay-bottom { font-size: 0.9rem; color: rgba(255,255,255,0.85); }
 
 /* ProductCard color thumbnails */
@@ -887,4 +911,18 @@ body .navbar.navbar-transparent {
 .footer-copy {
   margin-top: 12px; /* lebih kecil */
   text-align: center;
+}
+
+/* ===== Category controls (sorting & pagination) ===== */
+.category-controls {
+  border: 1px solid #e5e7eb; /* thin soft line */
+  border-radius: 8px;
+  background: #fff;
+}
+.category-controls .form-select,
+.category-controls .form-control {
+  border: 1px solid #e5e7eb;
+}
+.category-controls .btn {
+  border-color: #d1d5db;
 }

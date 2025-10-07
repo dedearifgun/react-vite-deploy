@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Image } from 'react-bootstrap';
 import { useParams, Link } from 'react-router-dom';
 import { productAPI } from '../utils/api';
+import { addItem as cartAddItem } from '../utils/cart';
 import { resolveAssetUrl } from '../utils/assets';
+import SuccessToast from '../components/SuccessToast';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -11,6 +13,11 @@ const ProductDetailPage = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [mainImage, setMainImage] = useState('');
+  const [toast, setToast] = useState({ show: false, title: '', message: '' });
+  const showToast = (title, message) => {
+    setToast({ show: true, title, message });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
   // Hapus quantity; pembelian diarahkan ke WhatsApp
 
   useEffect(() => {
@@ -60,6 +67,26 @@ const ProductDetailPage = () => {
     const text = `Hallo, Saya ingin membeli "${title}" dengan warna "${color}"${sizePart}`;
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
+  };
+
+  const handleAddToCart = () => {
+    const hasSizes = (product?.sizes || []).length > 0;
+    const color = selectedColor || '';
+    const size = selectedSize || '';
+    if (!color || (hasSizes && !size)) {
+      alert(hasSizes ? 'Silakan pilih warna dan ukuran terlebih dahulu.' : 'Silakan pilih warna terlebih dahulu.');
+      return;
+    }
+    cartAddItem({
+      productId: product?._id,
+      name: product?.name,
+      price: product?.price,
+      imageUrl: product?.imageUrl,
+      color,
+      size,
+      quantity: 1,
+    });
+    showToast('Berhasil!', 'Produk berhasil ditambahkan ke keranjang.');
   };
 
   if (loading) {
@@ -221,17 +248,35 @@ const ProductDetailPage = () => {
 
           {/* Hapus pilihan jumlah; pembelian via WhatsApp */}
           
-          <Button
-            className="btn-buy-now mb-3"
-            onClick={handleBuyClick}
-            disabled={!selectedColor || ((product?.sizes || []).length > 0 && !selectedSize)}
-          >
-            Beli Sekarang
-          </Button>
+          <div className="d-flex gap-2 mb-3">
+            <Button
+              variant="outline-secondary"
+              onClick={handleAddToCart}
+              disabled={!selectedColor || ((product?.sizes || []).length > 0 && !selectedSize)}
+            >
+              Tambah ke Keranjang
+            </Button>
+            <Button
+              className="btn-buy-now"
+              onClick={handleBuyClick}
+              disabled={!selectedColor || ((product?.sizes || []).length > 0 && !selectedSize)}
+            >
+              Checkout via WhatsApp
+            </Button>
+          </div>
           
           {/* Hapus label Kategori dan Untuk sesuai permintaan */}
         </Col>
       </Row>
+      {/* Success Toast notification (match admin panel style) */}
+      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1060 }}>
+        <SuccessToast
+          show={toast.show}
+          title={toast.title}
+          message={toast.message}
+          onClose={() => setToast(prev => ({ ...prev, show: false }))}
+        />
+      </div>
     </Container>
   );
 };

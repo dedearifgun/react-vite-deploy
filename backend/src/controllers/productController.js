@@ -29,6 +29,27 @@ exports.getProducts = async (req, res) => {
       query.$text = { $search: req.query.search };
     }
 
+    // Price range filter
+    const minPrice = req.query.minPrice ? Number(req.query.minPrice) : null;
+    const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : null;
+    if (minPrice !== null || maxPrice !== null) {
+      query.price = {};
+      if (minPrice !== null) query.price.$gte = minPrice;
+      if (maxPrice !== null) query.price.$lte = maxPrice;
+    }
+
+    // Size and color filters (single or comma-separated values)
+    const sizeParam = req.query.size;
+    const colorParam = req.query.color;
+    if (sizeParam) {
+      const sizes = String(sizeParam).split(',').map(s => s.trim()).filter(Boolean);
+      query.sizes = { $in: sizes };
+    }
+    if (colorParam) {
+      const colors = String(colorParam).split(',').map(c => c.trim()).filter(Boolean);
+      query.colors = { $in: colors };
+    }
+
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -36,11 +57,34 @@ exports.getProducts = async (req, res) => {
     const endIndex = page * limit;
     const total = await Product.countDocuments(query);
 
+    // Sorting
+    const sortKey = (req.query.sort || 'newest').toLowerCase();
+    let sortObj = { createdAt: -1 };
+    switch (sortKey) {
+      case 'oldest':
+        sortObj = { createdAt: 1 };
+        break;
+      case 'price_asc':
+        sortObj = { price: 1 };
+        break;
+      case 'price_desc':
+        sortObj = { price: -1 };
+        break;
+      case 'name_asc':
+        sortObj = { name: 1 };
+        break;
+      case 'name_desc':
+        sortObj = { name: -1 };
+        break;
+      default:
+        sortObj = { createdAt: -1 };
+    }
+
     const products = await Product.find(query)
       .populate('category', 'name slug')
       .skip(startIndex)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort(sortObj);
 
     // Pagination result
     const pagination = {};
@@ -63,6 +107,7 @@ exports.getProducts = async (req, res) => {
       success: true,
       count: products.length,
       pagination,
+      total,
       data: products
     });
   } catch (error) {
@@ -118,9 +163,23 @@ exports.createProduct = async (req, res) => {
       if (req.body.colorsJson) {
         req.body.colors = JSON.parse(req.body.colorsJson);
       }
+      if (req.body.variantsJson) {
+        req.body.variants = JSON.parse(req.body.variantsJson);
+      }
     } catch (_) {}
     if (typeof req.body.price === 'string') req.body.price = Number(req.body.price);
     if (typeof req.body.stock === 'string') req.body.stock = Number(req.body.stock);
+    if (Array.isArray(req.body.variants)) {
+      req.body.variants = req.body.variants.map(v => ({
+        sku: String(v.sku || '').trim(),
+        size: String(v.size || '').trim(),
+        color: String(v.color || '').trim(),
+        stock: Number(v.stock || 0),
+        priceDelta: Number(v.priceDelta || 0)
+      }));
+      // Hitung stok total dari varian
+      req.body.stock = req.body.variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
+    }
 
     // Auto-generate product code if missing
     const generateProductCode = async () => {
@@ -174,9 +233,22 @@ exports.updateProduct = async (req, res) => {
       if (req.body.colorsJson) {
         req.body.colors = JSON.parse(req.body.colorsJson);
       }
+      if (req.body.variantsJson) {
+        req.body.variants = JSON.parse(req.body.variantsJson);
+      }
     } catch (_) {}
     if (typeof req.body.price === 'string') req.body.price = Number(req.body.price);
     if (typeof req.body.stock === 'string') req.body.stock = Number(req.body.stock);
+    if (Array.isArray(req.body.variants)) {
+      req.body.variants = req.body.variants.map(v => ({
+        sku: String(v.sku || '').trim(),
+        size: String(v.size || '').trim(),
+        color: String(v.color || '').trim(),
+        stock: Number(v.stock || 0),
+        priceDelta: Number(v.priceDelta || 0)
+      }));
+      req.body.stock = req.body.variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
+    }
 
     // Jika ada gambar utama baru (di-set oleh middleware), hapus gambar lama
     if (req.body.imageUrl && product.imageUrl && product.imageUrl.startsWith('/uploads/')) {

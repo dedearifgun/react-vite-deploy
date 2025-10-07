@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
   name: {
@@ -42,10 +42,21 @@ const ProductSchema = new mongoose.Schema({
   additionalImages: [String],
   colors: [String],
   sizes: [String],
+  // Stok total (diisi otomatis dari jumlah stok varian jika ada)
   stock: {
     type: Number,
     default: 0
   },
+  // Varian per kombinasi ukuran & warna, dengan SKU dan stok masing-masing
+  variants: [
+    {
+      sku: { type: String, trim: true },
+      size: { type: String, trim: true },
+      color: { type: String, trim: true },
+      stock: { type: Number, default: 0, min: 0 },
+      priceDelta: { type: Number, default: 0 }
+    }
+  ],
   featured: {
     type: Boolean,
     default: false

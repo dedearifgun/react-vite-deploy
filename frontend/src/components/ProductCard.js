@@ -29,6 +29,8 @@ const ProductCard = ({ product }) => {
           variant="top" 
           src={previewImage || resolveAssetUrl(product.imageUrl) || 'https://via.placeholder.com/300x200?text=Produk+Kerajinan+Kulit'} 
           alt={product.name} 
+          loading="lazy"
+          decoding="async"
         />
       </div>
       {colorEntries.length > 0 && (
@@ -39,6 +41,8 @@ const ProductCard = ({ product }) => {
               className={`pc-color-thumb ${activeColor === color ? 'active' : ''}`}
               src={resolveAssetUrl(url)}
               alt={color}
+              loading="lazy"
+              decoding="async"
               onMouseEnter={() => { setPreviewImage(resolveAssetUrl(url)); setActiveColor(color); }}
               onMouseLeave={() => { setPreviewImage(defaultImage); setActiveColor(defaultColorKey); }}
             />

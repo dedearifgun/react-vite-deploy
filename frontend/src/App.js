@@ -12,6 +12,7 @@ import RequireAuth from './components/RequireAuth';
 import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import CartPage from './pages/CartPage';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
@@ -37,6 +38,7 @@ function App() {
             <Route path="/category/:gender/:category" element={<CategoryPage />} />
             <Route path="/sejarah" element={<SejarahPage />} />
             <Route path="/toko" element={<TokoPage />} />
+            <Route path="/cart" element={<CartPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
           <Route element={<RequireAuth />}>

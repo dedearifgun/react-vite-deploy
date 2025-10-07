@@ -10,6 +10,8 @@ const CategoryCard = ({ category }) => {
           variant="top" 
           src={category.imageUrl || 'https://via.placeholder.com/300x200?text=Kategori'} 
           alt={category.name} 
+          loading="lazy"
+          decoding="async"
         />
         <div className="category-title">
           <h5 className="mb-0">{category.name}</h5>
