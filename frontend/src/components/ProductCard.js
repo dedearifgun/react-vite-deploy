@@ -31,12 +31,6 @@ const ProductCard = ({ product }) => {
 
   // Badge promosi dan stok
   const isBestSeller = !!product?.featured;
-  const isNew = (() => {
-    const created = product?.createdAt ? new Date(product.createdAt) : null;
-    if (!created) return false;
-    const days = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
-    return days <= 30; // baru jika <= 30 hari
-  })();
   const hasDiscount = (() => {
     const dp = Number(product?.discountPercent || product?.discount || 0);
     if (dp > 0) return true;

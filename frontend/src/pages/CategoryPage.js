@@ -14,13 +14,13 @@ const CategoryPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(9);
-  const [sort, setSort] = useState('newest');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
+  const [page] = useState(1);
+  const [limit] = useState(9);
+  const [sort] = useState('newest');
+  const [minPrice] = useState('');
+  const [maxPrice] = useState('');
   const [pagination, setPagination] = useState({});
-  const [total, setTotal] = useState(0);
+  const [, setTotal] = useState(0);
   const prefetchRef = useRef(null);
 
   useEffect(() => {

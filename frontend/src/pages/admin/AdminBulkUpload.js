@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Row, Col, Card, Button, Table, Form, ProgressBar, Alert } from 'react-bootstrap';
+import { Container, Card, Button, Table, Form, ProgressBar, Alert } from 'react-bootstrap';
 import AdminSidebar from '../../components/AdminSidebar';
 import { productAPI, categoryAPI } from '../../utils/api';
 import Papa from 'papaparse';
