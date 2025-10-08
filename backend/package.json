@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "seed:admin": "node src/scripts/seedAdmin.js",
     "seed:accounts": "node src/scripts/seedUsers.js",
+    "audit:uploads": "node src/scripts/auditUploads.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
