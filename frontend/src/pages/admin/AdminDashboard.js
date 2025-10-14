@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Row, Col, Card, Form } from 'react-bootstrap';
+import { Container, Form, Dropdown } from 'react-bootstrap';
 import AdminSidebar from '../../components/AdminSidebar';
 import { statsAPI } from '../../utils/api';
 import { LineChart } from '@mui/x-charts/LineChart';
@@ -26,6 +26,8 @@ const AdminDashboard = () => {
   const [quote, setQuote] = useState('');
   const [quoteAuthor, setQuoteAuthor] = useState('');
   const [currentTime, setCurrentTime] = useState('');
+  // Tema: adaptasi FinanceDash [data-theme="light"]
+  const [theme, setTheme] = useState('dark');
 
   // Helper: jumlah hari dalam bulan tertentu
   const getDaysInMonth = (year, month /* 0-11 */) => {
@@ -140,6 +142,16 @@ const AdminDashboard = () => {
     return () => clearInterval(t);
   }, []);
 
+  // Terapkan atribut data-theme pada root untuk switch tema
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.setAttribute('data-theme', 'light');
+    } else {
+      root.removeAttribute('data-theme');
+    }
+  }, [theme]);
+
   return (
     <div className="admin-layout">
       <Helmet>
@@ -149,175 +161,190 @@ const AdminDashboard = () => {
       </Helmet>
       <AdminSidebar />
       <div className="admin-content">
-        <Container fluid>
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center" style={{ gap: 16 }}>
-              <h2 className="admin-title mb-0">Dashboard</h2>
-              <div className="text-muted small" style={{ maxWidth: 520, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Container fluid className="app">
+          {/* Topbar ala FinanceDash */}
+          <div className="topbar">
+            <div className="brand">
+              <span className="text-muted" style={{ fontWeight: 600 }}>
                 {quote ? `“${quote}”${quoteAuthor ? ` — ${quoteAuthor}` : ''}` : 'Memuat quote...'}
-              </div>
+              </span>
             </div>
-            {/* Kontrol rentang waktu: Bulan & Tahun */}
-            <div className="d-flex align-items-center" style={{ gap: 12 }}>
-              <div className="text-muted small me-2" style={{ whiteSpace: 'nowrap' }}>{currentTime || 'Memuat waktu...'}</div>
-              <Form.Select
-                size="sm"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                aria-label="Pilih Bulan"
-                style={{ maxWidth: 140 }}
-              >
-                {[
-                  'Januari','Februari','Maret','April','Mei','Juni',
-                  'Juli','Agustus','September','Oktober','November','Desember'
-                ].map((m, idx) => (
-                  <option key={idx} value={idx}>{m}</option>
-                ))}
-              </Form.Select>
-              <Form.Select
-                size="sm"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(Number(e.target.value))}
-                aria-label="Pilih Tahun"
-                style={{ maxWidth: 110 }}
-              >
-                {Array.from({ length: 5 }, (_, i) => nowInit.getFullYear() - i).map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </Form.Select>
+          <div className="actions">
+              <div className="segmented seg-dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle id="month-toggle" className="seg" variant="link">
+                    {[
+                      'Januari','Februari','Maret','April','Mei','Juni',
+                      'Juli','Agustus','September','Oktober','November','Desember'
+                    ][selectedMonth]}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu align="start">
+                    {[
+                      'Januari','Februari','Maret','April','Mei','Juni',
+                      'Juli','Agustus','September','Oktober','November','Desember'
+                    ].map((m, idx) => (
+                      <Dropdown.Item
+                        key={idx}
+                        active={idx === selectedMonth}
+                        onClick={() => setSelectedMonth(idx)}
+                      >
+                        {m}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+              <div className="segmented seg-dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle id="year-toggle" className="seg" variant="link">
+                    {selectedYear}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu align="start">
+                    {Array.from({ length: 5 }, (_, i) => nowInit.getFullYear() - i).map((y) => (
+                      <Dropdown.Item
+                        key={y}
+                        active={y === selectedYear}
+                        onClick={() => setSelectedYear(Number(y))}
+                      >
+                        {y}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+              <button className="btn" onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))} title="Toggle tema">
+                {theme === 'dark' ? '☾' : '☀'}
+              </button>
+              <div className="text-muted small" style={{ whiteSpace: 'nowrap' }}>{currentTime || 'Memuat waktu...'}</div>
             </div>
           </div>
 
-          {/* Header informasi: waktu sudah tampil di header; kartu WIB dihapus */}
-          {/* Kartu paling atas: klik WhatsApp per hari */}
-          <Row className="mb-3">
-            <Col md={12}>
-              <Card className="mb-3 dashboard-card">
-                <Card.Body>
-                  <div className="d-flex align-items-center">
-                    <div>
-                      <h6 className="text-muted">Chat (WhatsApp) Hari Ini</h6>
-                      <h3>{stats.todayWaClicks}</h3>
-                    </div>
-                  </div>
-                  {/* LineChart harian per bulan dipilih */}
-                  <div className="mt-3">
-                    {(() => {
-                      const { days, counts } = buildMonthDailySeries(stats.dailyWaClicks, selectedYear, selectedMonth);
-                      const total = counts.reduce((s, n) => s + (Number(n) || 0), 0);
-                      return (
-                        <>
-                          <LineChart
-                            xAxis={[{ data: days, label: 'Tanggal', valueFormatter: (v) => String(v).padStart(2, '0') }]}
-                            series={[{ label: 'Chat (WA)', data: counts, color: '#ffc107', curve: 'monotoneX', showMark: true }]}
-                            grid={{ vertical: true, horizontal: true }}
-                            height={220}
-                            sx={{
-                              '& .MuiChartsGrid-line': { stroke: '#e0e0e0', strokeWidth: 1, opacity: 0.6 },
-                              '& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': { fontSize: 11 },
-                            }}
-                            slotProps={{ legend: { hidden: false } }}
-                          />
-                          {total === 0 && (
-                            <div className="text-muted small mt-2">Belum ada data bulan ini</div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
+          {/* Grid utama ala FinanceDash */}
+          <div className="grid">
+            {/* KPI Grid */}
+            <div className="kpis">
+              <div className="kpi">
+                <div className="kpi-label">Produk</div>
+                <div className="kpi-value">{stats.totalProducts}</div>
+                <div className="kpi-sub">Hari ini: {stats.todayProducts}</div>
+              </div>
+              <div className="kpi">
+                <div className="kpi-label">Kategori</div>
+                <div className="kpi-value">{stats.totalCategories}</div>
+                <div className="kpi-sub">Hari ini: {stats.todayCategories}</div>
+              </div>
+              <div className="kpi">
+                <div className="kpi-label">Chat WA Hari Ini</div>
+                <div className="kpi-value">{stats.todayWaClicks}</div>
+                <div className="kpi-sub">Bulan ini: {(() => {
+                  const { counts } = buildMonthDailySeries(stats.dailyWaClicks, selectedYear, selectedMonth);
+                  return counts.reduce((s, n) => s + (Number(n) || 0), 0);
+                })()}</div>
+              </div>
+              <div className="kpi">
+                <div className="kpi-label">Log</div>
+                <div className="kpi-value">{(() => {
+                  const { counts } = buildMonthDailySeries(stats.dailyLogs, selectedYear, selectedMonth);
+                  return counts.reduce((s, n) => s + (Number(n) || 0), 0);
+                })()}</div>
+                <div className="kpi-sub">Hari ini: {(() => {
+                  const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+                  const found = (stats.dailyLogs || []).find(d => d.date === todayStr);
+                  return found ? Number(found.count || 0) : 0;
+                })()}</div>
+              </div>
+            </div>
 
-          <Row>
-            <Col md={6}>
-              <Card className="mb-3 dashboard-card">
-                <Card.Body>
-                  <div className="d-flex align-items-center">
-                    <div>
-                      <h6 className="text-muted">Total Produk</h6>
-                      <h3>{stats.totalProducts}</h3>
-                      <div className="text-muted">Hari ini: {stats.todayProducts}</div>
-                    </div>
-                  </div>
-                  {/* LineChart harian per bulan dipilih */}
-                  <div className="mt-3">
-                    {(() => {
-                      const { days, counts } = buildMonthDailySeries(stats.dailyProducts, selectedYear, selectedMonth);
-                      const total = counts.reduce((s, n) => s + (Number(n) || 0), 0);
-                      return (
-                        <>
-                          <LineChart
-                            xAxis={[{ data: days, label: 'Tanggal', valueFormatter: (v) => String(v).padStart(2, '0') }]}
-                            series={[{ label: 'Produk', data: counts, color: '#0d6efd', curve: 'monotoneX', showMark: true }]}
-                            grid={{ vertical: true, horizontal: true }}
-                            height={200}
-                            sx={{
-                              '& .MuiChartsGrid-line': { stroke: '#e0e0e0', strokeWidth: 1, opacity: 0.6 },
-                              '& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': { fontSize: 11 },
-                            }}
-                            slotProps={{ legend: { hidden: false } }}
-                          />
-                          {total === 0 && (
-                            <div className="text-muted small mt-2">Belum ada data bulan ini</div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-            
-            <Col md={6}>
-              <Card className="mb-3 dashboard-card">
-                <Card.Body>
-                  <div className="d-flex align-items-center">
-                    <div>
-                      <h6 className="text-muted">Total Log</h6>
-                      <h3>{(() => {
-                        const { counts } = buildMonthDailySeries(stats.dailyLogs, selectedYear, selectedMonth);
-                        return counts.reduce((s, n) => s + (Number(n) || 0), 0);
-                      })()}</h3>
-                      <div className="text-muted">Hari ini: {(() => {
-                        const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-                        const found = (stats.dailyLogs || []).find(d => d.date === todayStr);
-                        return found ? Number(found.count || 0) : 0;
-                      })()}</div>
-                    </div>
-                  </div>
-                  {/* LineChart harian per bulan dipilih */}
-                  <div className="mt-3">
-                    {(() => {
-                      const { days, counts } = buildMonthDailySeries(stats.dailyLogs, selectedYear, selectedMonth);
-                      const total = counts.reduce((s, n) => s + (Number(n) || 0), 0);
-                      return (
-                        <>
-                          <LineChart
-                            xAxis={[{ data: days, label: 'Tanggal', valueFormatter: (v) => String(v).padStart(2, '0') }]}
-                            series={[{ label: 'Log', data: counts, color: '#6c757d', curve: 'monotoneX', showMark: true }]}
-                            grid={{ vertical: true, horizontal: true }}
-                            height={200}
-                            sx={{
-                              '& .MuiChartsGrid-line': { stroke: '#e0e0e0', strokeWidth: 1, opacity: 0.6 },
-                              '& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': { fontSize: 11 },
-                            }}
-                            slotProps={{ legend: { hidden: false } }}
-                          />
-                          {total === 0 && (
-                            <div className="text-muted small mt-2">Belum ada data bulan ini</div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-          
+            {/* Chart 1: Produk Line (posisi grid-area: line) */}
+            <div className="card chart-card">
+              <div className="card-header">
+                <h2>Produk Dibuat per Hari</h2>
+                <div className="legend"><span className="dot" style={{ background: '#0d6efd' }}></span>Produk</div>
+              </div>
+              {(() => {
+                const { days, counts } = buildMonthDailySeries(stats.dailyProducts, selectedYear, selectedMonth);
+                const total = counts.reduce((s, n) => s + (Number(n) || 0), 0);
+                return (
+                  <>
+                    <LineChart
+                      xAxis={[{ data: days, label: 'Tanggal', valueFormatter: (v) => String(v).padStart(2, '0') }]}
+                      series={[{ label: 'Produk', data: counts, color: '#0d6efd', curve: 'monotoneX', showMark: true }]}
+                      grid={{ vertical: true, horizontal: true }}
+                      height={200}
+                      sx={{
+                        '& .MuiChartsGrid-line': { stroke: '#e0e0e0', strokeWidth: 1, opacity: 0.6 },
+                        '& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': { fontSize: 11 },
+                      }}
+                      slotProps={{ legend: { hidden: false } }}
+                    />
+                    {total === 0 && (
+                      <div className="text-muted small mt-2">Belum ada data bulan ini</div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
 
+            {/* Chart 2: Log Line (posisi grid-area: donut) */}
+            <div className="card chart-card">
+              <div className="card-header">
+                <h2>Aktivitas Log per Hari</h2>
+                <div className="legend"><span className="dot" style={{ background: '#6c757d' }}></span>Log</div>
+              </div>
+              {(() => {
+                const { days, counts } = buildMonthDailySeries(stats.dailyLogs, selectedYear, selectedMonth);
+                const total = counts.reduce((s, n) => s + (Number(n) || 0), 0);
+                return (
+                  <>
+                    <LineChart
+                      xAxis={[{ data: days, label: 'Tanggal', valueFormatter: (v) => String(v).padStart(2, '0') }]}
+                      series={[{ label: 'Log', data: counts, color: '#6c757d', curve: 'monotoneX', showMark: true }]}
+                      grid={{ vertical: true, horizontal: true }}
+                      height={200}
+                      sx={{
+                        '& .MuiChartsGrid-line': { stroke: '#e0e0e0', strokeWidth: 1, opacity: 0.6 },
+                        '& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': { fontSize: 11 },
+                      }}
+                      slotProps={{ legend: { hidden: false } }}
+                    />
+                    {total === 0 && (
+                      <div className="text-muted small mt-2">Belum ada data bulan ini</div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* Chart 3: WA Line (posisi grid-area: bar) */}
+            <div className="card chart-card">
+              <div className="card-header">
+                <h2>Chat WhatsApp per Hari</h2>
+                <div className="legend"><span className="dot" style={{ background: '#ffc107' }}></span>WA Click</div>
+              </div>
+              {(() => {
+                const { days, counts } = buildMonthDailySeries(stats.dailyWaClicks, selectedYear, selectedMonth);
+                const total = counts.reduce((s, n) => s + (Number(n) || 0), 0);
+                return (
+                  <>
+                    <LineChart
+                      xAxis={[{ data: days, label: 'Tanggal', valueFormatter: (v) => String(v).padStart(2, '0') }]}
+                      series={[{ label: 'Chat (WA)', data: counts, color: '#ffc107', curve: 'monotoneX', showMark: true }]}
+                      grid={{ vertical: true, horizontal: true }}
+                      height={200}
+                      sx={{
+                        '& .MuiChartsGrid-line': { stroke: '#e0e0e0', strokeWidth: 1, opacity: 0.6 },
+                        '& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': { fontSize: 11 },
+                      }}
+                      slotProps={{ legend: { hidden: false } }}
+                    />
+                    {total === 0 && (
+                      <div className="text-muted small mt-2">Belum ada data bulan ini</div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
         </Container>
       </div>
     </div>

@@ -145,9 +145,9 @@ const AdminBulkUpload = () => {
       </Helmet>
       <AdminSidebar />
       <div className="admin-content">
-        <Container fluid>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="admin-title">Manajemen Bulk Upload</h2>
+        <Container fluid className="app">
+          <div className="d-flex justify-content-between align-items-end mb-3 flex-wrap">
+            <h2 className="admin-title mb-0">Manajemen Bulk Upload</h2>
           </div>
           <Card className="mb-3">
             <Card.Body>
@@ -184,33 +184,33 @@ const AdminBulkUpload = () => {
             <Card>
               <Card.Body>
                 <Card.Title>Preview ({rows.length} baris)</Card.Title>
-                <div style={{ maxHeight: 400, overflow: 'auto' }}>
-                  <Table striped bordered hover size="sm">
+                <div className="content-scroll">
+                  <Table striped hover size="sm" className="admin-table">
                     <thead>
                       <tr>
-                        <th>#</th>
-                        <th>Nama</th>
-                        <th>Kategori</th>
-                        <th>Gender</th>
-                        <th>Harga</th>
-                        <th>Sizes</th>
-                        <th>Colors</th>
-                        <th>Status</th>
-                        <th>Image URL</th>
+                        <th className="col-index">#</th>
+                        <th className="col-name">Nama</th>
+                        <th className="col-category">Kategori</th>
+                        <th className="col-gender">Gender</th>
+                        <th className="col-price">Harga</th>
+                        <th className="col-sizes">Sizes</th>
+                        <th className="col-colors">Colors</th>
+                        <th className="col-status">Status</th>
+                        <th className="col-imageurl">Image URL</th>
                       </tr>
                     </thead>
                     <tbody>
                       {rows.map(r => (
                         <tr key={r._row}>
-                          <td>{r._row}</td>
-                          <td>{r.name}</td>
-                          <td>{r.categoryName}</td>
-                          <td>{r.gender}</td>
-                          <td>{r.price}</td>
-                          <td>{(r.sizes || []).join(', ')}</td>
-                          <td>{(r.colors || []).join(', ')}</td>
-                          <td>{r.status}</td>
-                          <td>{r.imageUrl}</td>
+                          <td className="col-index">{r._row}</td>
+                          <td className="col-name">{r.name}</td>
+                          <td className="col-category">{r.categoryName}</td>
+                          <td className="col-gender">{r.gender}</td>
+                          <td className="col-price">{r.price}</td>
+                          <td className="col-sizes">{(r.sizes || []).join(', ')}</td>
+                          <td className="col-colors">{(r.colors || []).join(', ')}</td>
+                          <td className="col-status">{r.status}</td>
+                          <td className="col-imageurl">{r.imageUrl}</td>
                         </tr>
                       ))}
                     </tbody>

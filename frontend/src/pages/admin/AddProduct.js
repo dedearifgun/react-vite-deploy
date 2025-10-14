@@ -239,9 +239,9 @@ const AdminProducts = () => {
       </Helmet>
       <AdminSidebar />
       <div className="admin-content">
-        <Container fluid>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2>Manajemen Produk</h2>
+        <Container fluid className="app">
+          <div className="d-flex justify-content-between align-items-end mb-3 flex-wrap">
+            <h2 className="admin-title">Manajemen Produk</h2>
             <Button variant="primary" onClick={() => handleShowModal()}>
               <i className="fas fa-plus me-2"></i> Tambah Produk
             </Button>
@@ -256,34 +256,35 @@ const AdminProducts = () => {
                   </div>
                 </div>
               ) : (
-                <Table responsive hover>
+                <div className="content-scroll">
+                  <Table responsive hover className="admin-table">
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>Gambar</th>
-                      <th>Nama Produk</th>
-                      <th>Kategori</th>
-                      <th>Untuk</th>
-                      <th>Harga</th>
-                      <th>Aksi</th>
+                      <th className="col-id">ID</th>
+                      <th className="col-img">Gambar</th>
+                      <th className="col-name">Nama Produk</th>
+                      <th className="col-category">Kategori</th>
+                      <th className="col-gender">Untuk</th>
+                      <th className="col-price">Harga</th>
+                      <th className="col-actions">Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
                     {products.map(product => (
                       <tr key={product._id || product.id}>
-                        <td>{product._id || product.id}</td>
-                        <td>
+                        <td className="col-id">{product._id || product.id}</td>
+                        <td className="col-img">
                           <img 
                             src={resolveAssetUrl(product.imageUrl)} 
                             alt={product.name} 
                             style={{ width: '50px', height: '50px', objectFit: 'cover' }} 
                           />
                         </td>
-                        <td>{product.name}</td>
-                        <td>{getCategoryLabel(product.category)}</td>
-                        <td>{product.gender === 'pria' ? 'Pria' : product.gender === 'wanita' ? 'Wanita' : 'Unisex'}</td>
-                        <td>Rp {Number(product.price).toLocaleString('id-ID')}</td>
-                        <td>
+                        <td className="col-name">{product.name}</td>
+                        <td className="col-category">{getCategoryLabel(product.category)}</td>
+                        <td className="col-gender">{product.gender === 'pria' ? 'Pria' : product.gender === 'wanita' ? 'Wanita' : 'Unisex'}</td>
+                        <td className="col-price">Rp {Number(product.price).toLocaleString('id-ID')}</td>
+                        <td className="col-actions">
                           <Button 
                             variant="outline-primary" 
                             size="sm" 
@@ -312,7 +313,8 @@ const AdminProducts = () => {
                       </tr>
                     ))}
                   </tbody>
-                </Table>
+                  </Table>
+                </div>
               )}
             </Card.Body>
           </Card>

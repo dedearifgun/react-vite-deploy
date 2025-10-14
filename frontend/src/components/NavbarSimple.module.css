@@ -3,21 +3,26 @@
 .navbar {
   width: 260px;
   min-height: 100vh;
-  /* Ubah background ke gradasi abu-abu */
-  background: linear-gradient(180deg, #6b7280 0%, #374151 100%);
-  color: #fff;
+  position: sticky;
+  top: 0;
+  background: var(--bg-soft);
+  color: var(--text);
   display: flex;
   flex-direction: column;
-  padding: 16px 12px;
+  padding: var(--space-3) var(--space-2);
+  border-right: 1px solid var(--card-strong);
   font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, Liberation Sans, sans-serif;
 }
 
 .navbarMain {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .header {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .version {
@@ -28,33 +33,35 @@
 .link {
   display: flex;
   align-items: center;
-  color: rgba(255, 255, 255, 0.85);
-  padding: 12px 10px;
+  color: var(--text);
+  opacity: 0.9;
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px; /* seragam tinggi item */
   border-radius: 12px;
   text-decoration: none;
   font-weight: 600;
-  margin: 4px 0;
 }
 
 .link:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: var(--card);
+  color: var(--text);
 }
 
 .linkIcon {
-  margin-right: 10px;
+  margin-right: var(--space-2);
+  width: 20px; height: 20px;
 }
 
 .link[data-active] {
-  background-color: rgba(255, 255, 255, 0.25);
-  color: #fff;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  background: var(--card-strong);
+  color: var(--text);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .footer {
   /* Hilangkan garis putih divider agar konsisten dengan item lain */
   border-top: none;
-  padding-top: 12px;
+  margin-top: var(--space-4);
 }
 
 /* Logout button inherits the same style as other links */
@@ -62,8 +69,13 @@
   background: transparent;
   border: none;
   border-radius: 12px;
+  color: var(--text) !important;
+  opacity: 1;
+  font-weight: 700;
 }
 .footer .link:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: var(--card);
+  color: var(--text);
 }
+/* Pastikan label Logout selalu kontras dan terlihat jelas */
+.footer .link span { color: var(--text) !important; opacity: 1; }

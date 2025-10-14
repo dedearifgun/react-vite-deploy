@@ -48,7 +48,7 @@ const AdminSidebar = () => {
         <Group className={classes.header} justify="flex-start">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <img src={logoPutih} alt="Logo" style={{ height: 64, marginBottom: 10 }} />
-            <span style={{ fontSize: 24, fontWeight: 800, color: '#fff' }}>Hallo, {roleLabel}</span>
+            <span style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)' }}>Hallo, {roleLabel}</span>
           </div>
         </Group>
         {links}

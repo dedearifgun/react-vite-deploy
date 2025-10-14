@@ -178,8 +178,8 @@ const AdminCategories = () => {
       </Helmet>
       <AdminSidebar />
       <div className="admin-content">
-        <Container fluid>
-          <div className="d-flex justify-content-between align-items-center mb-4">
+        <Container fluid className="app">
+          <div className="d-flex justify-content-between align-items-end mb-3 flex-wrap">
             <h2 className="admin-title">Manajemen Kategori</h2>
             <div className="d-flex gap-2">
               <Button variant="secondary" onClick={saveOrder}>Simpan Urutan</Button>
@@ -194,13 +194,14 @@ const AdminCategories = () => {
           ) : (
             <Card>
               <Card.Body>
-                <Table responsive hover>
+                <div className="content-scroll">
+                  <Table responsive hover className="admin-table">
                   <thead>
                     <tr>
-                      <th>Nama</th>
-                      <th>Gender</th>
-                      <th>Sub Kategori</th>
-                      <th>Aksi</th>
+                      <th className="col-name">Nama</th>
+                      <th className="col-gender">Gender</th>
+                      <th className="col-subcategory">Sub Kategori</th>
+                      <th className="col-actions">Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -213,16 +214,16 @@ const AdminCategories = () => {
                         onDrop={() => onDrop(idx)}
                         style={{ cursor: 'move' }}
                       >
-                        <td>{category.name}</td>
-                        <td>
+                        <td className="col-name">{category.name}</td>
+                        <td className="col-gender">
                           {category.gender === 'men' && 'Pria'}
                           {category.gender === 'women' && 'Wanita'}
                           {category.gender === 'unisex' && 'Aksesoris'}
                           {category.gender === 'pria' && 'Pria'}
                           {category.gender === 'wanita' && 'Wanita'}
                         </td>
-                        <td>{(category.subcategories || []).join(', ') || '-'}</td>
-                        <td>
+                        <td className="col-subcategory">{(category.subcategories || []).join(', ') || '-'}</td>
+                        <td className="col-actions">
                           <Button
                             variant="outline-primary"
                             size="sm"
@@ -244,13 +245,19 @@ const AdminCategories = () => {
                       </tr>
                     ))}
                   </tbody>
-                </Table>
+                  </Table>
+                </div>
               </Card.Body>
             </Card>
           )}
 
         {/* Modal Tambah/Edit Kategori */}
-        <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          dialogClassName="admin-modal"
+          contentClassName="admin-modal-content"
+        >
           <Modal.Header closeButton>
             <Modal.Title>{modalTitle}</Modal.Title>
           </Modal.Header>
