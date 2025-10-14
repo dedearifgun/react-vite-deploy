@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Container, Row, Col, Card, Table, Button, Modal, Form } from 'react-bootstrap';
+import Select from 'react-select';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import AdminSidebar from '../../components/AdminSidebar';
 import { productAPI, categoryAPI } from '../../utils/api';
@@ -284,6 +285,54 @@ const AdminProducts = () => {
     return cat;
   };
 
+  // Opsi dan gaya untuk dropdown Status bertema gelap
+  const statusOptions = [
+    { value: 'draft', label: 'Draft' },
+    { value: 'published', label: 'Published' },
+    { value: 'archived', label: 'Archived' },
+  ];
+  const genderOptions = [
+    { value: 'pria', label: 'Pria' },
+    { value: 'wanita', label: 'Wanita' },
+    { value: 'unisex', label: 'Aksesoris' },
+  ];
+  const categoryOptions = (categories || []).map(cat => ({ value: cat._id, label: cat.name }));
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: 'var(--card)',
+      borderColor: 'var(--card-strong)',
+      boxShadow: state.isFocused ? '0 0 0 2px rgba(255,255,255,0.18)' : 'none',
+      '&:hover': { borderColor: 'var(--card-strong)' },
+    }),
+    singleValue: (base) => ({ ...base, color: 'var(--text)' }),
+    input: (base) => ({ ...base, color: 'var(--text)' }),
+    placeholder: (base) => ({ ...base, color: 'var(--muted)' }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: 'var(--bg-soft)',
+      color: 'var(--text)',
+      border: '1px solid var(--card-strong)',
+      boxShadow: 'none',
+    }),
+    menuList: (base) => ({
+      ...base,
+      backgroundColor: 'var(--bg-soft)',
+      paddingTop: 0,
+      paddingBottom: 0,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? 'var(--card)'
+        : state.isFocused
+        ? 'var(--card-strong)'
+        : 'var(--bg-soft)',
+      color: 'var(--text)',
+    }),
+    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+  };
+
   // Gunakan helper global untuk URL gambar
 
   return (
@@ -411,16 +460,16 @@ const AdminProducts = () => {
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Status</Form.Label>
-                  <Form.Select
+                  <Select
                     name="status"
-                    value={currentProduct.status}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                    <option value="archived">Archived</option>
-                  </Form.Select>
+                    value={statusOptions.find(o => o.value === currentProduct.status)}
+                    onChange={(opt) => setCurrentProduct(prev => ({ ...prev, status: opt?.value }))}
+                    options={statusOptions}
+                    styles={selectStyles}
+                    isSearchable={false}
+                    menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+                    classNamePrefix="admin-select"
+                  />
                 </Form.Group>
               </Col>
             </Row>
@@ -430,17 +479,17 @@ const AdminProducts = () => {
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Kategori</Form.Label>
-                  <Form.Select 
+                  <Select
                     name="category"
-                    value={currentProduct.category} 
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Pilih Kategori</option>
-                    {categories.map(cat => (
-                      <option key={cat._id} value={cat._id}>{cat.name}</option>
-                    ))}
-                  </Form.Select>
+                    value={categoryOptions.find(o => o.value === currentProduct.category) || null}
+                    onChange={(opt) => setCurrentProduct(prev => ({ ...prev, category: opt?.value || '', subcategory: '' }))}
+                    options={categoryOptions}
+                    styles={selectStyles}
+                    isSearchable
+                    menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+                    classNamePrefix="admin-select"
+                    placeholder="Pilih Kategori"
+                  />
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -449,18 +498,22 @@ const AdminProducts = () => {
                   {(() => {
                     const selected = categories.find(c => c._id === currentProduct.category);
                     const subs = selected?.subcategories || [];
+                    const subOptions = subs.map(s => ({ value: s, label: s }));
+                    const disabled = !selected || subs.length === 0;
+                    const placeholder = subs.length ? 'Pilih Sub Kategori' : 'Tidak ada sub kategori';
                     return (
-                      <Form.Select
+                      <Select
                         name="subcategory"
-                        value={currentProduct.subcategory || ''}
-                        onChange={handleInputChange}
-                        disabled={!selected || subs.length === 0}
-                      >
-                        <option value="">{subs.length ? 'Pilih Sub Kategori' : 'Tidak ada sub kategori'}</option>
-                        {subs.map(s => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </Form.Select>
+                        value={subOptions.find(o => o.value === (currentProduct.subcategory || '')) || null}
+                        onChange={(opt) => setCurrentProduct(prev => ({ ...prev, subcategory: opt?.value || '' }))}
+                        options={subOptions}
+                        styles={selectStyles}
+                        isSearchable
+                        isDisabled={disabled}
+                        menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+                        classNamePrefix="admin-select"
+                        placeholder={placeholder}
+                      />
                     );
                   })()}
                 </Form.Group>
@@ -483,16 +536,16 @@ const AdminProducts = () => {
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Untuk</Form.Label>
-                  <Form.Select 
+                  <Select
                     name="gender"
-                    value={currentProduct.gender} 
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="pria">Pria</option>
-                    <option value="wanita">Wanita</option>
-                    <option value="unisex">Aksesoris</option>
-                  </Form.Select>
+                    value={genderOptions.find(o => o.value === currentProduct.gender) || null}
+                    onChange={(opt) => setCurrentProduct(prev => ({ ...prev, gender: opt?.value || 'pria' }))}
+                    options={genderOptions}
+                    styles={selectStyles}
+                    isSearchable={false}
+                    menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+                    classNamePrefix="admin-select"
+                  />
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -565,7 +618,7 @@ const AdminProducts = () => {
                   />
                   <div className="mt-2 d-flex flex-wrap gap-2">
                     {(currentProduct.sizes || []).map((s) => (
-                      <span key={s} className="badge bg-primary">
+                      <span key={s} className="badge bg-dark text-white">
                         {s}
                         <button
                           type="button"
@@ -614,7 +667,7 @@ const AdminProducts = () => {
                   <small className="text-muted">Stok total dihitung dari seluruh varian</small>
                 </div>
                 <div className="table-responsive">
-                  <table className="table table-sm align-middle">
+                  <table className="table table-sm align-middle variant-table">
                     <thead>
                       <tr>
                         <th>Ukuran</th>

@@ -1082,8 +1082,8 @@ body {
 .admin-content .form-control::placeholder { color: var(--muted); opacity: 0.9; }
 .admin-content .form-control:focus,
 .admin-content .form-select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent);
+  border-color: var(--card-strong);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.18);
 }
 
 /* Konsistensi tombol di backend */
@@ -1132,8 +1132,8 @@ body {
 .admin-modal-content .form-control::placeholder { color: var(--muted); opacity: 0.9; }
 .admin-modal-content .form-control:focus,
 .admin-modal-content .form-select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent);
+  border-color: var(--card-strong);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.18);
   outline: none;
 }
 .admin-modal-content .form-label { color: var(--text); }
@@ -1289,6 +1289,39 @@ tbody tr:hover { background: var(--card-strong); }
 .admin-content table thead th,
 .admin-content table tbody td { border-color: var(--card-strong); }
 .admin-content .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); }
+
+/* ===== Variant table: remove underline/borders for cleaner look ===== */
+.admin-content .variant-table { background: transparent; }
+.admin-content .variant-table thead th,
+.admin-content .variant-table tbody td { border: 0 !important; }
+.admin-content .variant-table .form-control-plaintext { border: 0 !important; padding-left: 0; padding-right: 0; }
+/* Prevent underline on select options (browser-dependent) */
+.admin-content .form-select option { text-decoration: none; }
+/* Darken Select options for better contrast in dark theme */
+.admin-content .form-select option {
+  background: var(--card-strong);
+  color: var(--text);
+}
+/* Apply same variant table cleanup inside modal portal */
+.admin-modal-content .variant-table { background: transparent; }
+.admin-modal-content .variant-table thead th,
+.admin-modal-content .variant-table tbody td { border: 0 !important; }
+.admin-modal-content .variant-table .form-control-plaintext { border: 0 !important; padding-left: 0; padding-right: 0; }
+
+/* Ensure Select inside admin modal follows dark theme */
+.admin-modal-content .form-select {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--card-strong);
+}
+.admin-modal-content .form-select:focus {
+  border-color: var(--card-strong);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.18);
+}
+.admin-modal-content .form-select option {
+  background: var(--card-strong);
+  color: var(--text);
+}
 
 /* ===== Admin table standardization ===== */
 .admin-content .admin-table {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Form, Dropdown } from 'react-bootstrap';
+import { Container, Dropdown } from 'react-bootstrap';
 import AdminSidebar from '../../components/AdminSidebar';
 import { statsAPI } from '../../utils/api';
 import { LineChart } from '@mui/x-charts/LineChart';

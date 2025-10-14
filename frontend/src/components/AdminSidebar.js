@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Group } from '@mantine/core';
-import { IconGauge, IconBox, IconTags, IconLogout, IconListDetails } from '@tabler/icons-react';
+import { IconGauge, IconBox, IconTags, IconLogout, IconListDetails, IconCloudUpload } from '@tabler/icons-react';
 import classes from './NavbarSimple.module.css';
 import logoPutih from '../assets/logo-putih.png';
 
@@ -21,7 +21,8 @@ const AdminSidebar = () => {
       { link: '/admin/categories', label: 'Kategori', icon: IconTags },
     ];
     if (canManage) {
-      base.push({ link: '/admin/bulk-upload', label: 'Bulk Upload', icon: IconBox });
+      // Gunakan ikon berbeda untuk Bulk Upload agar tidak sama dengan Produk
+      base.push({ link: '/admin/bulk-upload', label: 'Bulk Upload', icon: IconCloudUpload });
       base.push({ link: '/admin/logs', label: 'Log', icon: IconListDetails });
     }
     return base;
@@ -47,8 +48,8 @@ const AdminSidebar = () => {
       <div className={classes.navbarMain}>
         <Group className={classes.header} justify="flex-start">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <img src={logoPutih} alt="Logo" style={{ height: 64, marginBottom: 10 }} />
-            <span style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)' }}>Hallo, {roleLabel}</span>
+            <img src={logoPutih} alt="Logo" style={{ height: 80, marginBottom: 10 }} />
+            <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)' }}>Hallo, {roleLabel}</span>
           </div>
         </Group>
         {links}

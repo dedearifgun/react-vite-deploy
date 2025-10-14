@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Container, Table, Button, Modal, Form, Card } from 'react-bootstrap';
+import Select from 'react-select';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { FaEdit, FaTrash, FaPlus, FaTimes } from 'react-icons/fa';
 import AdminSidebar from '../../components/AdminSidebar';
@@ -8,7 +9,7 @@ import { categoryAPI } from '../../utils/api';
 import SuccessToast from '../../components/SuccessToast';
 import ErrorNotice from '../../components/ErrorNotice';
 
-const AdminCategories = () => {
+  const AdminCategories = () => {
   const currentUser = (() => {
     try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
   })();
@@ -276,15 +277,16 @@ const AdminCategories = () => {
 
               <Form.Group className="mb-3">
                 <Form.Label>Gender</Form.Label>
-                <Form.Select
+                <Select
                   name="gender"
-                  value={formData.gender}
-                  onChange={handleChange}
-                >
-                  <option value="unisex">Aksesoris</option>
-                  <option value="pria">Pria</option>
-                  <option value="wanita">Wanita</option>
-                </Form.Select>
+                  value={genderOptions.find(o => o.value === formData.gender) || null}
+                  onChange={(opt) => setFormData(prev => ({ ...prev, gender: opt?.value || 'unisex' }))}
+                  options={genderOptions}
+                  styles={selectStyles}
+                  isSearchable={false}
+                  menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+                  classNamePrefix="admin-select"
+                />
               </Form.Group>
 
               {/* Sub Kategori */}
@@ -371,3 +373,43 @@ const AdminCategories = () => {
 };
 
 export default AdminCategories;
+    const selectStyles = {
+      control: (base, state) => ({
+        ...base,
+        backgroundColor: 'var(--card)',
+        borderColor: 'var(--card-strong)',
+        boxShadow: state.isFocused ? '0 0 0 2px rgba(255,255,255,0.18)' : 'none',
+        '&:hover': { borderColor: 'var(--card-strong)' },
+      }),
+      singleValue: (base) => ({ ...base, color: 'var(--text)' }),
+      input: (base) => ({ ...base, color: 'var(--text)' }),
+      placeholder: (base) => ({ ...base, color: 'var(--muted)' }),
+      menu: (base) => ({
+        ...base,
+        backgroundColor: 'var(--bg-soft)',
+        color: 'var(--text)',
+        border: '1px solid var(--card-strong)',
+        boxShadow: 'none',
+      }),
+      menuList: (base) => ({
+        ...base,
+        backgroundColor: 'var(--bg-soft)',
+        paddingTop: 0,
+        paddingBottom: 0,
+      }),
+      option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isSelected
+          ? 'var(--card)'
+          : state.isFocused
+          ? 'var(--card-strong)'
+          : 'var(--bg-soft)',
+        color: 'var(--text)',
+      }),
+      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+    };
+    const genderOptions = [
+      { value: 'unisex', label: 'Aksesoris' },
+      { value: 'pria', label: 'Pria' },
+      { value: 'wanita', label: 'Wanita' },
+    ];
