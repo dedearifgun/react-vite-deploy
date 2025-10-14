@@ -54,6 +54,8 @@ exports.getUser = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     const { name, username, email, password, role } = req.body;
+    const allowedRoles = ['admin', 'staff'];
+    const roleSafe = allowedRoles.includes(role) ? role : 'staff';
     
     // Check if email already exists
     const emailExists = await User.findOne({ email });
@@ -79,7 +81,7 @@ exports.createUser = async (req, res) => {
       username,
       email,
       password,
-      role
+      role: roleSafe
     });
     
     res.status(201).json({
@@ -107,6 +109,7 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { name, username, email, role, password } = req.body;
+    const allowedRoles = ['admin', 'staff'];
     
     // Find user
     let user = await User.findById(req.params.id);
@@ -144,7 +147,9 @@ exports.updateUser = async (req, res) => {
     if (name) user.name = name;
     if (username) user.username = username;
     if (email) user.email = email;
-    if (role) user.role = role;
+    if (role) {
+      user.role = allowedRoles.includes(role) ? role : 'staff';
+    }
     if (password) user.password = password;
     
     // Save user

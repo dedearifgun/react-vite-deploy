@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Group } from '@mantine/core';
-import { IconGauge, IconBox, IconTags, IconLogout, IconListDetails, IconCloudUpload } from '@tabler/icons-react';
+import { IconGauge, IconBox, IconTags, IconLogout, IconListDetails, IconCloudUpload, IconUsers, IconDatabase } from '@tabler/icons-react';
 import classes from './NavbarSimple.module.css';
 import logoPutih from '../assets/logo-putih.png';
 
@@ -11,8 +11,9 @@ const AdminSidebar = () => {
   // Ambil role pengguna dari localStorage untuk ditampilkan di header
   const storedUser = localStorage.getItem('user');
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-  const roleLabel = parsedUser?.role === 'admin' ? 'ADMIN' : (parsedUser?.role === 'staff' ? 'STAFF' : 'User');
+  const roleLabel = parsedUser?.role === 'admin' ? 'ADMIN' : (parsedUser?.role === 'staff' ? 'STAF' : 'STAF');
   const canManage = parsedUser?.role === 'admin' || parsedUser?.role === 'staff';
+  const isAdmin = parsedUser?.role === 'admin';
 
   const data = useMemo(() => {
     const base = [
@@ -20,13 +21,17 @@ const AdminSidebar = () => {
       { link: '/admin/products', label: 'Produk', icon: IconBox },
       { link: '/admin/categories', label: 'Kategori', icon: IconTags },
     ];
+    if (isAdmin) {
+      base.push({ link: '/admin/users', label: 'User Management', icon: IconUsers });
+    }
     if (canManage) {
       // Gunakan ikon berbeda untuk Bulk Upload agar tidak sama dengan Produk
       base.push({ link: '/admin/bulk-upload', label: 'Bulk Upload', icon: IconCloudUpload });
+      base.push({ link: '/admin/database', label: 'Database', icon: IconDatabase });
       base.push({ link: '/admin/logs', label: 'Log', icon: IconListDetails });
     }
     return base;
-  }, [canManage]);
+  }, [canManage, isAdmin]);
 
   const links = data.map((item) => {
     const isActive = location.pathname.startsWith(item.link);

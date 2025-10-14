@@ -349,23 +349,21 @@ import ErrorNotice from '../../components/ErrorNotice';
           }}
         />
         )}
-        {/* Notification area (success or error) */}
-        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1060 }}>
-          {toast.type === 'error' ? (
-            <ErrorNotice
-              show={toast.show}
-              message={toast.message || 'Oops! Something went terribly wrong.'}
-              onClose={() => setToast(prev => ({ ...prev, show: false }))}
-            />
-          ) : (
-            <SuccessToast
-              show={toast.show}
-              title={toast.title}
-              message={toast.message}
-              onClose={() => setToast(prev => ({ ...prev, show: false }))}
-            />
-          )}
-        </div>
+        {/* Notification area (centered overlay) */}
+        {toast.type === 'error' ? (
+          <ErrorNotice
+            show={toast.show}
+            message={toast.message || 'Oops! Something went terribly wrong.'}
+            onClose={() => setToast(prev => ({ ...prev, show: false }))}
+          />
+        ) : (
+          <SuccessToast
+            show={toast.show}
+            title={toast.title}
+            message={toast.message}
+            onClose={() => setToast(prev => ({ ...prev, show: false }))}
+          />
+        )}
         </Container>
       </div>
     </div>

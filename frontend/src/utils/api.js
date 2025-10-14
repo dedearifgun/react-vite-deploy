@@ -71,6 +71,7 @@ export const authAPI = {
 export const userAPI = {
   getUsers: () => api.get('/users'),
   getUser: (id) => api.get(`/users/${id}`),
+  createUser: (userData) => api.post('/users', userData),
   updateUser: (id, userData) => api.put(`/users/${id}`, userData),
   deleteUser: (id) => api.delete(`/users/${id}`),
 };
@@ -92,6 +93,20 @@ export const statsAPI = {
 // Analytics publik (klik WhatsApp)
 export const analyticsAPI = {
   trackWhatsAppClick: (payload = {}) => api.post('/analytics/wa-click', payload),
+};
+
+// Database import/export API
+export const dbAPI = {
+  getInfo: () => api.get('/db/info'),
+  export: (collections = []) => api.post('/db/export', { collections }, { responseType: 'blob' }),
+  exportZip: (collections = []) => api.post('/db/export-zip', { collections }, { responseType: 'blob' }),
+  import: (file, replaceExisting = true) => {
+    const form = new FormData();
+    form.append('dataFile', file);
+    form.append('replaceExisting', String(replaceExisting));
+    return api.post('/db/import', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  progress: (jobId) => api.get(`/db/progress/${encodeURIComponent(jobId)}`),
 };
 
 export default api;

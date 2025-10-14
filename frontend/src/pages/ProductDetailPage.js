@@ -377,15 +377,13 @@ const ProductDetailPage = () => {
           {/* Hapus label Kategori dan Untuk sesuai permintaan */}
         </Col>
       </Row>
-      {/* Success Toast notification (match admin panel style) */}
-      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1060 }}>
-        <SuccessToast
-          show={toast.show}
-          title={toast.title}
-          message={toast.message}
-          onClose={() => setToast(prev => ({ ...prev, show: false }))}
-        />
-      </div>
+      {/* Success Toast notification (centered overlay consistent with backend) */}
+      <SuccessToast
+        show={toast.show}
+        title={toast.title}
+        message={toast.message}
+        onClose={() => setToast(prev => ({ ...prev, show: false }))}
+      />
       {/* Zoom Modal */}
       <Modal show={showZoom} onHide={() => setShowZoom(false)} size="lg" centered>
         <Modal.Body>

@@ -14,6 +14,7 @@ const authRoutes = require('./src/routes/authRoutes');
 const logRoutes = require('./src/routes/logRoutes');
 const statsRoutes = require('./src/routes/statsRoutes');
 const analyticsRoutes = require('./src/routes/analyticsRoutes');
+const dbRoutes = require('./src/routes/dbRoutes');
 
 const app = express();
 const Product = require('./src/models/productModel');
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/db', dbRoutes);
 
 // Default route
 app.get('/', (req, res) => {

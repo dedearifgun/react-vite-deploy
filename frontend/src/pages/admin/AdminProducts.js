@@ -795,20 +795,18 @@ const AdminProducts = () => {
         />
       )}
 
-      {/* Notification area */}
-      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1060 }}>
-        <SuccessToast
-          show={successToast.show}
-          title={successToast.title}
-          message={successToast.message}
-          onClose={() => setSuccessToast(prev => ({ ...prev, show: false }))}
-        />
-        <ErrorNotice
-          show={errorNotice.show}
-          message={errorNotice.message}
-          onClose={() => setErrorNotice(prev => ({ ...prev, show: false }))}
-        />
-      </div>
+      {/* Notification area (centered overlay, theme-consistent) */}
+      <SuccessToast
+        show={successToast.show}
+        title={successToast.title}
+        message={successToast.message}
+        onClose={() => setSuccessToast(prev => ({ ...prev, show: false }))}
+      />
+      <ErrorNotice
+        show={errorNotice.show}
+        message={errorNotice.message}
+        onClose={() => setErrorNotice(prev => ({ ...prev, show: false }))}
+      />
     </div>
   );
 };

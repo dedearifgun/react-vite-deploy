@@ -780,26 +780,32 @@ body .navbar.navbar-transparent {
 }
 .text-gray-600 { color: #4b5563; }
 .text-gray-500 { color: rgba(107,114,128,0.7); }
-.confirm-overlay {
+
+/* ===== Global notification overlays (centered, theme-aware) ===== */
+.confirm-overlay,
+.toast-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(11, 15, 20, 0.45); /* soft dim overlay, matches backend tone */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1100;
+  z-index: 1200;
+  padding: 20px;
 }
 
 .confirm-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #fff;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
-  border-radius: 12px;
+  background: var(--bg-soft);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  border-radius: 14px;
   padding: 24px 20px;
-  width: 370px;
-  border: 1px solid #e5e7eb;
+  width: 400px;
+  border: 1px solid var(--card-strong);
+  animation: notif-enter 220ms ease-out;
 }
 
 .confirm-icon {
@@ -807,19 +813,19 @@ body .navbar.navbar-transparent {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: #fee2e2; /* red-100 */
+  background: color-mix(in oklab, var(--bad) 22%, transparent);
   border-radius: 9999px;
 }
 
 .confirm-title {
-  color: #111827; /* gray-900 */
-  font-weight: 600;
+  color: var(--text);
+  font-weight: 700;
   margin-top: 12px;
   font-size: 20px;
 }
 
 .confirm-message {
-  color: #4b5563; /* gray-600 */
+  color: var(--muted);
   font-size: 14px;
   margin-top: 8px;
   text-align: center;
@@ -838,27 +844,27 @@ body .navbar.navbar-transparent {
   width: 100%;
   max-width: 144px;
   height: 40px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db; /* gray-300 */
-  background: #fff;
-  color: #4b5563; /* gray-600 */
-  font-weight: 500;
+  border-radius: 10px;
+  border: 1px solid var(--card-strong);
+  background: var(--card);
+  color: var(--text);
+  font-weight: 600;
   font-size: 14px;
 }
-.btn-cancel:hover { background: #f3f4f6; }
+.btn-cancel:hover { background: var(--card-strong); }
 
 .btn-confirm {
   width: 100%;
   max-width: 144px;
   height: 40px;
-  border-radius: 6px;
-  border: none;
-  background: #dc2626; /* red-600 */
+  border-radius: 10px;
+  border: 0;
+  background: var(--bad);
   color: #fff;
-  font-weight: 500;
+  font-weight: 700;
   font-size: 14px;
 }
-.btn-confirm:hover { background: #b91c1c; }
+.btn-confirm:hover { filter: brightness(0.92); }
 .site-footer {
   display: flex;
   flex-direction: column;
@@ -871,54 +877,69 @@ body .navbar.navbar-transparent {
   color: rgba(31, 41, 55, 0.7); /* gray-800/70 */
 }
 
-/* ===== Success Toast (match confirm dialog aesthetic) ===== */
-.success-card {
+/* ===== Success & Error cards (centered, consistent with backend) ===== */
+.success-card,
+.error-card {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #ffffff;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
-  border-radius: 12px;
-  padding: 16px 16px 18px;
-  width: 300px;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-soft);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  border-radius: 14px;
+  padding: 18px 18px 20px;
+  width: 360px;
+  border: 1px solid var(--card-strong);
+  animation: notif-enter 220ms ease-out;
 }
 
-.success-icon {
+.success-icon,
+.error-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  background: #dcfce7; /* green-100 */
+  width: 44px;
+  height: 44px;
+  background: color-mix(in oklab, var(--good) 18%, transparent);
   border-radius: 9999px;
   margin-bottom: 8px;
 }
+.error-icon { background: color-mix(in oklab, var(--bad) 18%, transparent); }
 
-.success-title {
-  color: #111827; /* gray-900 */
-  font-weight: 600;
+.success-title,
+.error-title {
+  color: var(--text);
+  font-weight: 700;
   font-size: 18px;
   margin: 4px 0 0;
 }
 
-.success-message {
-  color: #4b5563; /* gray-600 */
-  font-size: 13px;
+.success-message,
+.error-message {
+  color: var(--muted);
+  font-size: 14px;
   margin-top: 6px;
   text-align: center;
 }
 
-.success-close {
+.success-close,
+.notice-close {
   position: absolute;
-  right: 10px;
-  top: 10px;
+  right: 12px;
+  top: 12px;
   border: none;
   background: transparent;
-  color: #6b7280; /* gray-500 */
+  color: var(--muted);
   cursor: pointer;
 }
-.success-close:hover { color: #111827; }
+.success-close:hover,
+.notice-close:hover { color: var(--text); }
+
+@keyframes notif-enter {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 .footer-socials {
   display: flex;

@@ -33,7 +33,7 @@ async function run() {
       username: 'user',
       email: 'user@example.com',
       password: 'user123',
-      role: 'user',
+      role: 'staff',
     });
 
     await ensureUser({
