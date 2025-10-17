@@ -178,7 +178,7 @@ const AdminDatabase = () => {
                     <Button variant="outline-secondary" size="sm" onClick={selectAll}>Pilih Semua</Button>
                     <Button variant="outline-secondary" size="sm" onClick={clearAll}>Hapus Pilihan</Button>
                   </div>
-                  <div className="content-scroll">
+                  <div className="content-scroll" style={{ maxHeight: 260 }}>
                     <Table size="sm" responsive hover className="admin-table">
                       <thead>
                         <tr>
