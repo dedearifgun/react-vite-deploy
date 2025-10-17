@@ -3,9 +3,6 @@ import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../utils/api';
 import { resolveAssetUrl } from '../utils/assets';
-import priaImg from '../assets/nav-pria.jpg';
-import wanitaImg from '../assets/nav-wanita.jpg';
-import aksesorisImg from '../assets/nav-aksesoris.jpg';
 
 const NewArrivals = () => {
   const [items, setItems] = useState([]);
@@ -13,36 +10,10 @@ const NewArrivals = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await productAPI.getProducts({ limit: 12, sort: 'newest' });
+        const res = await productAPI.getProducts({ limit: 12 });
         const list = (res?.data?.data || []).filter(Boolean);
-
-        // Tampilkan maksimal 10 produk terbaru; tanpa random
-        const latest = list.slice(0, 10);
-
-        if (latest.length > 0) {
-          // Jika kurang dari 5, duplikasi berurutan agar grid tetap penuh
-          if (latest.length < 5) {
-            const repeated = [];
-            let i = 0;
-            while (repeated.length < 5) {
-              repeated.push(latest[i % latest.length]);
-              i += 1;
-            }
-            setItems(repeated);
-          } else {
-            setItems(latest);
-          }
-        } else {
-          // Fallback hanya jika benar-benar tidak ada produk
-          const placeholders = [
-            { id: 'ph-pria', name: 'Koleksi Pria', imageUrl: priaImg, fallbackLink: '/category/pria/all' },
-            { id: 'ph-wanita', name: 'Koleksi Wanita', imageUrl: wanitaImg, fallbackLink: '/category/wanita/all' },
-            { id: 'ph-aksesoris', name: 'Koleksi Aksesoris', imageUrl: aksesorisImg, fallbackLink: '/category/aksesoris/all' },
-            { id: 'ph-pria-2', name: 'Jelajahi Koleksi Pria', imageUrl: priaImg, fallbackLink: '/category/pria/all' },
-            { id: 'ph-wanita-2', name: 'Jelajahi Koleksi Wanita', imageUrl: wanitaImg, fallbackLink: '/category/wanita/all' },
-          ];
-          setItems(placeholders.slice(0, 5));
-        }
+        const shuffled = [...list].sort(() => 0.5 - Math.random());
+        setItems(shuffled.slice(0, 4));
       } catch (err) {
         console.error('Gagal memuat produk untuk New Arrivals:', err);
         setItems([]);
@@ -52,22 +23,26 @@ const NewArrivals = () => {
   }, []);
 
   return (
-    <Container className="latest-creations">
+    <Container className="py-5 with-navbar-offset latest-creations">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;1,400&display=swap');
         .latest-creations * { font-family: 'Poppins', sans-serif; }
       `}</style>
+      <h1 className="text-center mx-auto" style={{ fontSize: '1.875rem', fontWeight: 600 }}>Our Latest Creations</h1>
+      <p className="text-center mt-2 mx-auto" style={{ maxWidth: 640, fontSize: '0.875rem', color: '#64748b' }}>
+        A visual collection of our most recent works - each piece crafted with intention, emotion, and style.
+      </p>
       <div className="latest-creations-grid">
-        {items.map((p, idx) => (
-          <div key={`${p._id || p.id || 'item'}-${idx}`} className="lc-item">
+        {items.map((p) => (
+          <div key={p._id || p.id} className="lc-item">
             <img
               src={resolveAssetUrl(p.imageUrl) || 'https://via.placeholder.com/400x600?text=Produk'}
-              alt={p.name || 'Produk'}
+              alt={p.name}
               className="lc-img"
             />
             <div className="lc-overlay">
               <h1 className="lc-title">{p.name}</h1>
-              <Link to={(p._id || p.id) ? `/product/${p._id || p.id}` : (p.fallbackLink || '/toko')} className="lc-more">
+              <Link to={`/product/${p._id || p.id}`} className="lc-more">
                 Show More
                 <svg className="lc-icon" width="16" height="16" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M8.125 1.625H11.375V4.875" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>

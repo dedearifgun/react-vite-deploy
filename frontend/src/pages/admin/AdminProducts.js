@@ -199,47 +199,6 @@ const AdminProducts = () => {
     }));
   };
 
-  // Duplikasi produk: membuat salinan cepat dengan gambar utama yang sama
-  const duplicateProduct = async (orig) => {
-    try {
-      const fd = new FormData();
-      const categoryId = typeof orig.category === 'object' ? (orig.category?._id || orig.category?.id || '') : (orig.category || '');
-      fd.append('name', `${orig.name || 'Produk'} (Copy)`);
-      fd.append('description', orig.description || '');
-      if (categoryId) fd.append('category', categoryId);
-      if (orig.subcategory) fd.append('subcategory', orig.subcategory);
-      fd.append('gender', orig.gender || 'pria');
-      fd.append('price', orig.price || 0);
-      fd.append('status', 'draft');
-      (orig.sizes || []).forEach(s => fd.append('sizes[]', s));
-      (orig.colors || []).forEach(c => fd.append('colors[]', c));
-      fd.append('sizesJson', JSON.stringify(orig.sizes || []));
-      fd.append('colorsJson', JSON.stringify(orig.colors || []));
-      fd.append('variantsJson', JSON.stringify(orig.variants || []));
-
-      // Salin gambar utama dengan mendownload blob dari URL
-      if (orig.imageUrl) {
-        try {
-          const imgSrc = resolveAssetUrl(orig.imageUrl);
-          const resp = await fetch(imgSrc);
-          const blob = await resp.blob();
-          const filename = (orig.imageUrl.split('/').pop()) || 'product.jpg';
-          fd.append('image', blob, `copy-${filename}`);
-        } catch (e) {
-          // Jika gagal ambil blob, lanjutkan tanpa gambar (server bisa atur default)
-          console.warn('Gagal mendownload gambar untuk duplikasi:', e);
-        }
-      }
-
-      const res = await productAPI.createProduct(fd);
-      const data = res?.data?.data || res?.data;
-      setProducts([...products, data]);
-      showSuccess('Berhasil!', 'Produk berhasil diduplikasi');
-    } catch (err) {
-      showError('Gagal menduplikasi produk: ' + (err?.response?.data?.message || err.message));
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -443,14 +402,6 @@ const AdminProducts = () => {
                         <td className="col-gender">{product.gender === 'pria' ? 'Pria' : product.gender === 'wanita' ? 'Wanita' : 'Aksesoris'}</td>
                         <td className="col-price">Rp {Number(product.price).toLocaleString('id-ID')}</td>
                         <td className="col-actions">
-                          <Button 
-                            variant="outline-secondary" 
-                            size="sm" 
-                            className="me-2"
-                            onClick={() => duplicateProduct(product)}
-                          >
-                            <i className="fas fa-copy"></i>
-                          </Button>
                           <Button 
                             variant="outline-primary" 
                             size="sm" 
