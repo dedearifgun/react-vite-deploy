@@ -118,7 +118,7 @@ const Tetimoni = () => {
 
       <div className="marquee-row" style={{ width: '100%', margin: 0, overflow: 'hidden', position: 'relative' }}>
         <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: 80, zIndex: 10, pointerEvents: 'none', background: 'linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,0))' }} />
-        <div className="marquee-inner marquee-reverse" style={{ display: 'flex', transform: 'translateZ(0)', minWidth: '200%', paddingTop: 40, paddingBottom: 20 }}>
+        <div className="marquee-inner marquee-reverse" style={{ display: 'flex', transform: 'translateZ(0)', minWidth: '200%', paddingTop: 12, paddingBottom: 16 }}>
           {[...cardsData, ...cardsData].map((card, index) => (
             <CreateCard key={index} card={card} />
           ))}
