@@ -84,7 +84,7 @@ const AdminLogs = () => {
                   <span>Memuat log...</span>
                 </div>
               ) : (
-                <div className="content-scroll" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+                <div className="content-scroll">
                   <Table bordered hover responsive className="mb-0 admin-table">
                     <thead>
                       <tr>
