@@ -1,0 +1,82 @@
+/* Mantine-style simple navbar for AdminSidebar */
+
+.navbar {
+  width: 260px;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  background: var(--bg-soft);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3) var(--space-2);
+  border-right: 1px solid var(--card-strong);
+  font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, Liberation Sans, sans-serif;
+}
+
+.navbarMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.header {
+  margin-bottom: var(--space-3);
+}
+
+.version {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  color: var(--text);
+  opacity: 0.9;
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px; /* seragam tinggi item */
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px; /* sedikit diperbesar untuk keterbacaan */
+}
+
+.link:hover {
+  background: var(--card);
+  color: var(--text);
+}
+
+.linkIcon {
+  margin-right: var(--space-2);
+  width: 22px; height: 22px; /* ikon sedikit lebih besar */
+}
+
+.link[data-active] {
+  background: var(--card-strong);
+  color: var(--text);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.footer {
+  /* Hilangkan garis putih divider agar konsisten dengan item lain */
+  border-top: none;
+  margin-top: var(--space-4);
+}
+
+/* Logout button inherits the same style as other links */
+.footer .link {
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  color: var(--text) !important;
+  opacity: 1;
+  font-weight: 700;
+}
+.footer .link:hover {
+  background: var(--card);
+  color: var(--text);
+}
+/* Pastikan label Logout selalu kontras dan terlihat jelas */
+.footer .link span { color: var(--text) !important; opacity: 1; }

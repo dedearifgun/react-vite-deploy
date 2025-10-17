@@ -117,22 +117,21 @@ body .navbar.navbar-transparent {
   background-size: cover;
   background-position: center;
   color: white;
-  min-height: 100vh; /* penuh layar */
+  min-height: 100vh; /* foto benar-benar full */
   display: flex;
   align-items: center;
   margin-top: 0 !important;
   padding-top: 0 !important;
-  padding-bottom: 0; /* rapat ke bawah agar testimoni langsung di bawah hero */
 }
 
 .hero-section h1 {
-  font-size: 3rem; /* sedikit lebih kecil agar ringkas */
-  margin-bottom: 8px;
+  font-size: 3.2rem;
+  margin-bottom: 12px;
 }
 
 .hero-section p {
-  font-size: 1.05rem;
-  margin-bottom: 16px;
+  font-size: 1.1rem;
+  margin-bottom: 24px;
 }
 
 /* CTA di hero: selalu putih */
@@ -390,36 +389,27 @@ body .navbar.navbar-transparent {
 /* Removed unused New Arrivals styles (.new-arrivals-grid, .na-*) */
 
 /* Latest Creations overlay style */
-.latest-creations {
-  width: 100vw; /* full-bleed */
-  max-width: none;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  padding-left: 0;
-  padding-right: 0;
-}
 .latest-creations-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  align-items: stretch;
-  gap: 14px; /* sedikit spasi antar kotak */
-  width: 100%;
-  max-width: none;
-  margin-left: 0;
-  margin-right: 0;
-  margin-top: 0; /* dirapatkan dengan konten atas */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  max-width: 64rem; /* ~max-w-5xl */
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 3rem; /* ~mt-12 */
 }
 .lc-item {
   position: relative;
-  border-radius: 0; /* kotak tegas, tanpa lengkung */
+  border-radius: 0.5rem; /* rounded-lg */
   overflow: hidden;
-  aspect-ratio: 1 / 1; /* kotak sempurna */
 }
 .lc-img {
-  width: 100%;
-  height: 100%;
+  width: 14rem; /* size-56 width */
+  height: 14rem; /* size-56 height */
   object-fit: cover;
-  object-position: center;
+  object-position: top;
   display: block;
 }
 .lc-overlay {
@@ -668,79 +658,7 @@ body .navbar.navbar-transparent {
 .hero-cta {
   display: inline-flex;
   align-items: center;
-  gap: 8px; /* seragam: lebih rapat */
-}
-
-/* ====== Home Category Navigation (3 kolom) ====== */
-.home-categories {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px; /* seragam dengan bagian lain */
-  width: 100vw; /* full-bleed */
-  max-width: none;
-  padding: 16px; /* bingkai putih tepi diperbesar */
-  margin-left: calc(50% - 50vw); /* tarik keluar dari kontainer tengah */
-  margin-right: calc(50% - 50vw);
-  background: #fff; /* pastikan celah tampak putih */
-}
-.home-cat-link {
-  position: relative;
-  display: block;
-  height: 420px; /* diperbesar */
-  border-radius: 0; /* tegas */
-  overflow: hidden;
-  background-size: cover;
-  background-position: center;
-  text-decoration: none;
-  color: #fff !important; /* cegah efek biru dari link/Bootstrap */
-}
-.home-cat-link::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.25);
-  transition: background 0.25s ease;
-}
-.home-cat-link:hover::after { background: rgba(0,0,0,0.35); }
-.home-cat-title {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  font-size: 1.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #fff; /* pastikan tidak berubah jadi biru */
-  /* untuk underline animasi */
-  text-decoration: none;
-}
-
-.home-cat-link:hover,
-.home-cat-link:focus { color: #fff !important; }
-
-/* Underline muncul dari tengah ke pinggir saat hover */
-.home-cat-title::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -10px;
-  height: 2px;
-  width: 60%;
-  background: #fff;
-  transform: translateX(-50%) scaleX(0);
-  transform-origin: center;
-  transition: transform 220ms ease-in-out;
-}
-
-.home-cat-link:hover .home-cat-title::after {
-  transform: translateX(-50%) scaleX(1);
-}
-
-@media (max-width: 992px) {
-  .home-categories { grid-template-columns: 1fr; }
-  .home-cat-link { height: 240px; }
+  gap: 16px;
 }
 
 .hero-cta .cta-btn {
@@ -1406,19 +1324,7 @@ tbody tr:hover { background: var(--card-strong); }
 .admin-content .variant-table { background: transparent; }
 .admin-content .variant-table thead th,
 .admin-content .variant-table tbody td { border: 0 !important; }
-.admin-content .variant-table thead th,
-.admin-content .variant-table tbody td {
-  color: var(--text) !important;
-  opacity: 1 !important;
-}
 .admin-content .variant-table .form-control-plaintext { border: 0 !important; padding-left: 0; padding-right: 0; }
-/* Pastikan teks plaintext (mis. SKU otomatis) terlihat pada tema gelap */
-.admin-content .form-control-plaintext,
-.admin-content .variant-table .form-control-plaintext,
-.admin-modal-content .form-control-plaintext {
-  color: var(--text) !important;
-  background: transparent !important;
-}
 /* Prevent underline on select options (browser-dependent) */
 .admin-content .form-select option { text-decoration: none; }
 /* Darken Select options for better contrast in dark theme */
@@ -1430,11 +1336,6 @@ tbody tr:hover { background: var(--card-strong); }
 .admin-modal-content .variant-table { background: transparent; }
 .admin-modal-content .variant-table thead th,
 .admin-modal-content .variant-table tbody td { border: 0 !important; }
-.admin-modal-content .variant-table thead th,
-.admin-modal-content .variant-table tbody td {
-  color: var(--text) !important;
-  opacity: 1 !important;
-}
 .admin-modal-content .variant-table .form-control-plaintext { border: 0 !important; padding-left: 0; padding-right: 0; }
 
 /* Ensure Select inside admin modal follows dark theme */
@@ -1483,80 +1384,3 @@ tbody tr:hover { background: var(--card-strong); }
 .admin-content .admin-table .col-action { width: 130px; }
 .admin-content .admin-table .col-object { width: 120px; }
 .admin-content .admin-table .col-detail { white-space: normal; word-break: break-word; }
-/* ===== History Page Timeline ===== */
-.history-page { background: #ffffff; }
-.history-header h1 { letter-spacing: 0.2px; }
-.history-header .text-muted { color: #6b7280 !important; }
-
-.timeline { position: relative; margin: 8px 0 40px; }
-.timeline::before { content: ""; position: absolute; left: 50px; top: 0; bottom: 0; width: 2px; background: #e5e7eb; }
-
-.timeline-item { position: relative; display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 16px; padding-left: 24px; margin-bottom: 18px; }
-.timeline-dot { position: absolute; left: 44px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; border-radius: 50%; background: #111827; box-shadow: 0 0 0 3px #ffffff; border: 1px solid #e5e7eb; transition: transform 120ms ease; }
-.timeline-year { font-weight: 700; color: #111827; opacity: 0.9; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
-.timeline-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }
-.timeline-title { margin: 0 0 6px; font-size: 1.1rem; }
-.timeline-item--now .timeline-card { border-color: #111827; box-shadow: 0 10px 28px rgba(17,24,39,0.12); }
-
-/* Hover/Focus efek: border tegas + animasi membesar */
-.timeline-item:hover .timeline-card,
-.timeline-item:focus-within .timeline-card {
-  border-color: #111827;
-  transform: scale(1.02);
-  box-shadow: 0 12px 30px rgba(17,24,39,0.14);
-}
-.timeline-item:hover .timeline-dot,
-.timeline-item:focus-within .timeline-dot {
-  transform: translateY(-50%) scale(1.08);
-}
-
-@media (max-width: 576px) {
-  .timeline::before { left: 40px; }
-  .timeline-item { grid-template-columns: 80px 1fr; padding-left: 16px; }
-  .timeline-dot { left: 34px; }
-  .timeline-year { font-size: 0.95rem; }
-  .history-header h1 { font-size: 1.8rem; }
-}
-
-/* ===== Store Page (Toko) ===== */
-.store-grid { row-gap: 12px; }
-.store-card {
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
-  animation: slideUpFade 540ms ease both;
-  animation-delay: calc(var(--stagger, 0) * 80ms);
-}
-.store-card:hover,
-.store-card:focus-within {
-  transform: translateY(-2px) scale(1.02);
-  border-color: #111827;
-  box-shadow: 0 10px 28px rgba(17,24,39,0.12);
-}
-
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ====== Marketing Team Cards ====== */
-.marketing-section { padding-top: 24px; padding-bottom: 24px; }
-.marketing-grid { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; }
-.marketing-card {
-  width: 240px; /* ~w-60 */
-  font-size: 0.875rem; /* text-sm */
-  color: #6b7280; /* gray-500 */
-  border: 1px solid rgba(107,114,128,0.3); /* border-gray-500/30 */
-  border-radius: 12px; /* rounded */
-  background: #ffffff; /* bg-white */
-  overflow: hidden;
-}
-.marketing-card__body { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 24px 0; }
-.marketing-avatar { height: 96px; width: 96px; border-radius: 9999px; object-fit: cover; }
-.marketing-name { font-size: 1.125rem; color: #1f2937; margin-top: 12px; } /* text-lg text-gray-800 */
-.marketing-role { margin: 0; }
-.marketing-badge { background: rgba(16,185,129,0.2); padding: 2px 8px; border-radius: 9999px; margin-top: 8px; font-size: 12px; color: #16a34a; border: 1px solid rgba(16,185,129,0.3); }
-.marketing-card__actions { display: flex; align-items: center; border-top: 1px solid rgba(107,114,128,0.3); }
-.marketing-action { display: flex; align-items: center; justify-content: center; gap: 8px; width: 50%; padding: 12px 0; border: none; background: transparent; color: #374151; cursor: pointer; }
-.marketing-action--right { border-left: 1px solid rgba(107,114,128,0.3); }
-.marketing-action:hover { background: #f9fafb; }
