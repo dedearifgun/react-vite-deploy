@@ -463,7 +463,7 @@ const AdminProducts = () => {
                             <Button 
                               variant="outline-danger" 
                               size="sm"
-                              onClick={() => setConfirmDelete({ show: true, id: product._id || product.id })}
+                              onClick={() => setConfirmDelete({ show: true, id: product._id })}
                             >
                               <i className="fas fa-trash"></i>
                             </Button>
@@ -834,9 +834,18 @@ const AdminProducts = () => {
               const idToDelete = confirmDelete.id;
               if (!idToDelete) return;
               await productAPI.deleteProduct(idToDelete);
-              setProducts(products.filter(p => (p._id || p.id) !== idToDelete));
+              setProducts(products.filter(p => (p._id) !== idToDelete));
             } catch (err) {
-              showError('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
+              if (err?.response?.status === 404) {
+                // Produk tidak ditemukan: segarkan daftar agar sinkron
+                try {
+                  const res = await productAPI.getProducts({ sort: 'manual', limit: 1000 });
+                  setProducts(res.data?.data || []);
+                } catch (_) {}
+                showError('Produk sudah tidak ditemukan. Daftar diperbarui.');
+              } else {
+                showError('Gagal menghapus produk: ' + (err?.response?.data?.message || err.message));
+              }
             } finally {
               setConfirmDelete({ show: false, id: null });
             }
