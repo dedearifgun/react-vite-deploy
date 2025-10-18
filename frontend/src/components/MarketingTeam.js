@@ -9,9 +9,9 @@ const MarketingTeam = () => {
         <div className="marketing-card">
           <div className="marketing-card__body">
             <img className="marketing-avatar" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200" alt="userImage1" />
-            <h2 className="marketing-name">James Washington</h2>
+            <h2 className="marketing-name">Dede Arif Gunawan</h2>
             <p className="marketing-role">Content Marketing</p>
-            <p className="marketing-badge">Admin</p>
+            <p className="marketing-badge">IT SUPPORT</p>
           </div>
           <div className="marketing-card__actions">
             <button type="button" className="marketing-action">

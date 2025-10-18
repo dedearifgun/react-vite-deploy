@@ -21,10 +21,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminAddProduct from './pages/admin/AddProduct';
 import AdminCategories from './pages/admin/AdminCategories';
-import AdminBulkUpload from './pages/admin/AdminBulkUpload';
 import AdminLogs from './pages/admin/AdminLogs';
 import AdminUsers from './pages/admin/AdminUsers';
-import AdminDatabase from './pages/admin/AdminDatabase';
 import SejarahPage from './pages/SejarahPage';
 import TokoPage from './pages/TokoPage';
 
@@ -60,8 +58,6 @@ function App() {
               <Route path="/admin/products/add" element={<AdminAddProduct />} />
               <Route path="/admin/categories" element={<AdminCategories />} />
               <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/bulk-upload" element={<AdminBulkUpload />} />
-              <Route path="/admin/database" element={<AdminDatabase />} />
               <Route path="/admin/logs" element={<AdminLogs />} />
             </Route>
             </Routes>
