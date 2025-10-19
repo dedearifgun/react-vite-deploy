@@ -72,7 +72,7 @@ const SearchBox = () => {
         </div>
       )}
       <style>{`
-        .searchbox { position: relative; }
+        .searchbox { position: relative; width: 100%; }
         .searchbox-input {
           height: 32px; width: 100%; border: 1px solid rgba(255,255,255,0.6); border-radius: 16px; padding: 0 12px; font-size: 0.9rem;
           background: transparent; color: #fff;
@@ -85,7 +85,8 @@ const SearchBox = () => {
         }
         .text-navbar.scrolled .searchbox-input::placeholder { color: #6b7280; }
         .searchbox-dropdown {
-          position: absolute; top: 36px; right: 0; width: 420px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+          position: absolute; top: 36px; right: 0; left: auto; width: min(420px, 92vw);
+          background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);
           z-index: 1000; max-height: 60vh; overflow: auto;
         }
         .searchbox-item { display: flex; align-items: center; gap: 10px; padding: 10px; text-decoration: none; color: inherit; }
@@ -95,6 +96,16 @@ const SearchBox = () => {
         .searchbox-title { font-weight: 600; }
         .searchbox-sub { font-size: 0.85rem; color: #6b7280; }
         .searchbox-price { font-weight: 600; }
+
+        /* Responsif: di layar kecil, dropdown melebar mengikuti kontainer, input sedikit lebih tinggi */
+        @media (max-width: 768px) {
+          .searchbox-input { height: 34px; font-size: 0.95rem; }
+          /* Ketika render di dalam panel mobile, lebarkan dropdown penuh */
+          .mobile-menu .searchbox .searchbox-dropdown,
+          .text-navbar .searchbox .searchbox-dropdown {
+            left: 0; right: 0; width: 100%; max-width: none; top: 40px;
+          }
+        }
       `}</style>
     </div>
   );

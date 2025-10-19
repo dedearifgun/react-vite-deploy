@@ -47,10 +47,12 @@ const ProductCard = ({ product }) => {
         onMouseEnter={() => { setPreviewImage(hoverImage); setActiveColor(hoverColorKey); }}
         onMouseLeave={() => { setPreviewImage(defaultImage); setActiveColor(defaultColorKey); }}
       >
-        <Card.Img 
-          variant="top" 
-          src={previewImage || resolveAssetUrlSized(product?.imageUrl, 'medium') || 'https://via.placeholder.com/300x200?text=Produk+Kerajinan+Kulit'} 
-          alt={product?.name || 'Produk'} 
+        <Card.Img
+          variant="top"
+          src={previewImage || resolveAssetUrlSized(product?.imageUrl || (colorEntries[0]?.[1]), 'medium') || 'https://via.placeholder.com/300x200?text=Produk+Kerajinan+Kulit'}
+          srcSet={`${resolveAssetUrlSized(product?.imageUrl || (colorEntries[0]?.[1]), 'thumb')} 200w, ${resolveAssetUrlSized(product?.imageUrl || (colorEntries[0]?.[1]), 'medium')} 400w, ${resolveAssetUrlSized(product?.imageUrl || (colorEntries[0]?.[1]), 'large')} 800w`}
+          sizes="(max-width: 576px) 50vw, (max-width: 992px) 33vw, 25vw"
+          alt={product?.name || 'Produk'}
           loading="lazy"
           decoding="async"
         />

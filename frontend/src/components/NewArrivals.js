@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../utils/api';
-import { resolveAssetUrl } from '../utils/assets';
+import { resolveAssetUrl, resolveAssetUrlSized } from '../utils/assets';
 import priaImg from '../assets/nav-pria.jpg';
 import wanitaImg from '../assets/nav-wanita.jpg';
 import aksesorisImg from '../assets/nav-aksesoris.jpg';
@@ -62,8 +62,12 @@ const NewArrivals = () => {
           <div key={`${p._id || p.id || 'item'}-${idx}`} className="lc-item">
             <img
               src={resolveAssetUrl(p.imageUrl) || 'https://via.placeholder.com/400x600?text=Produk'}
+              srcSet={p.imageUrl ? `${resolveAssetUrlSized(p.imageUrl, 'thumb')} 300w, ${resolveAssetUrlSized(p.imageUrl, 'medium')} 600w, ${resolveAssetUrlSized(p.imageUrl, 'large')} 1200w` : undefined}
+              sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 992px) 33vw, (max-width: 1200px) 25vw, 20vw"
               alt={p.name || 'Produk'}
               className="lc-img"
+              loading="lazy"
+              decoding="async"
             />
             <div className="lc-overlay">
               <h1 className="lc-title">{p.name}</h1>

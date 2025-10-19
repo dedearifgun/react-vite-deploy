@@ -386,6 +386,40 @@ const AdminProducts = () => {
       <AdminSidebar />
       <div className="admin-content">
         <Container fluid className="app">
+          <style>{`
+            /* Mobile stacked table for admin lists */
+            .table-stacked td { vertical-align: middle; }
+            @media (max-width: 576px) {
+              .table-stacked thead { display: none; }
+              .table-stacked tbody tr {
+                display: block;
+                border-bottom: 1px solid var(--card-strong);
+                margin-bottom: 10px;
+              }
+              .table-stacked tbody td {
+                display: grid;
+                grid-template-columns: 120px 1fr;
+                gap: 8px;
+                padding: 6px 0 !important;
+                width: 100% !important;
+              }
+              .table-stacked tbody td::before {
+                content: attr(data-label);
+                color: var(--muted);
+                font-weight: 600;
+              }
+              .table-stacked .col-img img {
+                width: 48px !important;
+                height: 48px !important;
+                object-fit: cover;
+                border-radius: 6px;
+              }
+              .table-stacked .col-actions > * {
+                margin-right: 8px;
+                margin-bottom: 6px;
+              }
+            }
+          `}</style>
           <div className="d-flex justify-content-between align-items-end mb-3 flex-wrap">
             <h2 className="admin-title">Manajemen Produk</h2>
             <div className="d-flex gap-2">
@@ -406,7 +440,7 @@ const AdminProducts = () => {
                 </div>
               ) : (
                 <div className="content-scroll">
-                  <Table responsive hover className="admin-table">
+                  <Table responsive hover className="admin-table table-stacked">
                   <thead>
                     <tr>
                       <th className="col-id">ID</th>
@@ -429,20 +463,20 @@ const AdminProducts = () => {
                         onDrop={() => onDrop(idx)}
                         style={{ cursor: 'move' }}
                       >
-                        <td className="col-id">{product._id || product.id}</td>
-                        <td className="col-img">
+                        <td className="col-id" data-label="ID">{product._id || product.id}</td>
+                        <td className="col-img" data-label="Gambar">
                           <img 
                             src={resolveAssetUrl(product.imageUrl)} 
                             alt={product.name} 
                             style={{ width: '50px', height: '50px', objectFit: 'cover' }} 
                           />
                         </td>
-                        <td className="col-name">{product.name}</td>
-                        <td className="col-category">{getCategoryLabel(product.category)}</td>
-                        <td className="col-subcategory">{product.subcategory || '-'}</td>
-                        <td className="col-gender">{product.gender === 'pria' ? 'Pria' : product.gender === 'wanita' ? 'Wanita' : 'Aksesoris'}</td>
-                        <td className="col-price">Rp {Number(product.price).toLocaleString('id-ID')}</td>
-                        <td className="col-actions">
+                        <td className="col-name" data-label="Nama Produk">{product.name}</td>
+                        <td className="col-category" data-label="Kategori">{getCategoryLabel(product.category)}</td>
+                        <td className="col-subcategory" data-label="Sub Kategori">{product.subcategory || '-'}</td>
+                        <td className="col-gender" data-label="Untuk">{product.gender === 'pria' ? 'Pria' : product.gender === 'wanita' ? 'Wanita' : 'Aksesoris'}</td>
+                        <td className="col-price" data-label="Harga">Rp {Number(product.price).toLocaleString('id-ID')}</td>
+                        <td className="col-actions" data-label="Aksi">
                           <Button 
                             variant="outline-secondary" 
                             size="sm" 

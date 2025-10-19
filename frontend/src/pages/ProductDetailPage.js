@@ -228,18 +228,38 @@ const ProductDetailPage = () => {
       </div>
 
       <Row className="mb-5">
+        {/* Styles local untuk galeri mobile */}
+        <style>{`
+          .pd-mobile-thumbs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+          }
+          .pd-mobile-thumbs img {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 6px;
+            flex: 0 0 auto;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+          }
+        `}</style>
         <Col md={6}>
           <Row>
             <Col xs={3} className="d-none d-md-block">
               {structuredThumbs.map((t, index) => (
                 <div key={index} style={{ marginBottom: 12, cursor: 'pointer' }} onClick={() => setMainImage(resolveAssetUrlSized(t.src, 'large'))}>
                   <div className="position-relative">
-                <Image
-                  src={resolveAssetUrlSized(t.src, 'thumb')}
-                  alt={`${product.name} - ${t.label}`}
-                  thumbnail
-                  fluid
-                />
+                    <Image
+                      src={resolveAssetUrlSized(t.src, 'thumb')}
+                      alt={`${product.name} - ${t.label}`}
+                      thumbnail
+                      fluid
+                    />
                     <span className="badge bg-dark position-absolute" style={{ top: 6, left: 6 }}>{t.label}</span>
                   </div>
                 </div>
@@ -254,6 +274,19 @@ const ProductDetailPage = () => {
                 style={{ cursor: 'zoom-in' }}
                 onClick={() => { setShowZoom(true); setZoomed(false); }}
               />
+            </Col>
+            {/* Thumbnails horizontal untuk mobile */}
+            <Col xs={12} className="d-block d-md-none">
+              <div className="pd-mobile-thumbs" aria-label="Galeri gambar tambahan">
+                {structuredThumbs.map((t, index) => (
+                  <img
+                    key={index}
+                    src={resolveAssetUrlSized(t.src, 'thumb')}
+                    alt={`${product.name} - ${t.label}`}
+                    onClick={() => setMainImage(resolveAssetUrlSized(t.src, 'large'))}
+                  />
+                ))}
+              </div>
             </Col>
           </Row>
         </Col>
@@ -357,8 +390,9 @@ const ProductDetailPage = () => {
 
           {/* Hapus pilihan jumlah; pembelian via WhatsApp */}
           
-          <div className="d-flex gap-2 mb-3">
+          <div className="d-flex flex-column flex-sm-row gap-2 mb-3">
             <Button
+              className="w-100 w-sm-auto"
               variant="outline-secondary"
               onClick={handleAddToCart}
               disabled={!selectedColor || (((product?.sizes || []).length > 0) && !selectedSize) || variantStock === 0}
@@ -366,7 +400,7 @@ const ProductDetailPage = () => {
               Tambah ke Keranjang
             </Button>
             <Button
-              className="btn-buy-now"
+              className="btn-buy-now w-100 w-sm-auto"
               onClick={handleBuyClick}
               disabled={!selectedColor || (((product?.sizes || []).length > 0) && !selectedSize) || variantStock === 0}
             >

@@ -124,14 +124,18 @@ body .navbar.navbar-transparent {
   padding-top: 0 !important;
   padding-bottom: 0; /* rapat ke bawah agar testimoni langsung di bawah hero */
 }
+/* Responsif: sesuaikan tinggi hero di perangkat kecil agar tidak terlalu tinggi */
+@media (max-width: 992px) { .hero-section { min-height: 90vh; } }
+@media (max-width: 768px) { .hero-section { min-height: 78vh; } }
+@media (max-width: 480px) { .hero-section { min-height: 70vh; } }
 
 .hero-section h1 {
-  font-size: 3rem; /* sedikit lebih kecil agar ringkas */
+  font-size: clamp(2rem, 4vw + 0.5rem, 3rem); /* fluid untuk semua device */
   margin-bottom: 8px;
 }
 
 .hero-section p {
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 1.2vw + 0.4rem, 1.15rem); /* fluid untuk semua device */
   margin-bottom: 16px;
 }
 
@@ -220,11 +224,45 @@ body .navbar.navbar-transparent {
 }
 
 .category-section {
+  /* Gunakan gutter dari Container saja agar tidak makin ke tengah */
   padding: 60px 0;
+}
+@media (max-width: 768px) {
+  .category-section { padding-left: 0; padding-right: 0; }
 }
 
 .product-grid {
+  /* Hilangkan padding horizontal: biar mengikuti gutter Container (px-3/px-lg-4) */
   padding: 40px 0;
+}
+/* Neutralize Bootstrap Row negative margins so gutters stay visible (no edge bleed) */
+.product-grid.row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+/* Utility class: paksa Row tidak bleed ke tepi container */
+.row-no-bleed {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+/* Utility class: tambahkan gutter horizontal seragam di dalam section */
+.section-gutter {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* Utility class: full-bleed section with side gutters matching top tiles */
+.section-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* Perangkat kecil: gutter sedikit lebih kecil */
+@media (max-width: 768px) {
+  .product-grid { padding-left: 0; padding-right: 0; }
+  .section-gutter { padding-left: 12px; padding-right: 12px; }
+  .section-bleed { padding-left: 12px; padding-right: 12px; }
 }
 
 /* Sidebar filter tetap terlihat saat scroll */
@@ -390,13 +428,22 @@ body .navbar.navbar-transparent {
 /* Removed unused New Arrivals styles (.new-arrivals-grid, .na-*) */
 
 /* Latest Creations overlay style */
+/* Full-bleed dengan gutter kiri/kanan agar selaras dengan kolom atas */
 .latest-creations {
   width: 100vw; /* full-bleed */
   max-width: none;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* Hapus padding bawaan Bootstrap Container supaya tidak tambah kecil di kiri/kanan */
+.latest-creations.container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+@media (max-width: 768px) {
+  .latest-creations { padding-left: 12px; padding-right: 12px; }
 }
 .latest-creations-grid {
   display: grid;
@@ -409,6 +456,11 @@ body .navbar.navbar-transparent {
   margin-right: 0;
   margin-top: 0; /* dirapatkan dengan konten atas */
 }
+/* Responsif: sesuaikan jumlah kolom grid Latest Creations */
+@media (max-width: 1200px) { .latest-creations-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 992px)  { .latest-creations-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 768px)  { .latest-creations-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
+@media (max-width: 480px)  { .latest-creations-grid { grid-template-columns: 1fr; gap: 8px; } }
 .lc-item {
   position: relative;
   border-radius: 0; /* kotak tegas, tanpa lengkung */
@@ -436,7 +488,7 @@ body .navbar.navbar-transparent {
 }
 .lc-item:hover .lc-overlay { opacity: 1; }
 .lc-title {
-  font-size: 1.25rem; /* text-xl */
+  font-size: clamp(1rem, 2.5vw + 0.4rem, 1.25rem); /* fluid text */
   font-weight: 500; /* font-medium */
   margin: 0 0 0.25rem 0;
 }
@@ -444,7 +496,7 @@ body .navbar.navbar-transparent {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.875rem; /* text-sm */
+  font-size: clamp(0.8rem, 1.5vw + 0.3rem, 0.875rem); /* fluid text */
   color: rgba(255,255,255,0.7);
   text-decoration: none;
 }
@@ -1474,6 +1526,29 @@ tbody tr:hover { background: var(--card-strong); }
 .admin-content .admin-table .col-action { width: 130px; }
 .admin-content .admin-table .col-object { width: 120px; }
 .admin-content .admin-table .col-detail { white-space: normal; word-break: break-word; }
+
+/* Responsif untuk layar notebook:
+   Prioritaskan mengecilkan kolom Kategori & Sub Kategori supaya kolom Aksi (ikon dan titik tiga)
+   tetap muat dan tidak terpotong. */
+@media (max-width: 1600px) {
+  .admin-content .admin-table .col-category { width: 110px; }
+  .admin-content .admin-table .col-subcategory { width: 120px; }
+  .admin-content .admin-table .col-price { width: 110px; }
+}
+
+@media (max-width: 1366px) {
+  .admin-content .admin-table .col-name { width: 220px; }
+  .admin-content .admin-table .col-category { width: 90px; }
+  .admin-content .admin-table .col-subcategory { width: 100px; }
+  .admin-content .admin-table .col-gender { width: 90px; }
+  .admin-content .admin-table .col-price { width: 105px; }
+  /* Lebarkan sedikit kolom aksi agar 3 ikon (copy, edit, hapus) tetap muat */
+  .admin-content .admin-table .col-actions { width: 160px; }
+}
+/* Aksi: hindari ellipsis yang menyembunyikan tombol hapus */
+.admin-content .admin-table .col-actions { overflow: visible; text-overflow: clip; }
+.admin-content .admin-table .col-actions .btn { padding: 6px 8px; margin-right: 6px; }
+.admin-content .admin-table .col-actions .btn:last-child { margin-right: 0; }
 /* ===== History Page Timeline ===== */
 .history-page { background: #ffffff; }
 .history-header h1 { letter-spacing: 0.2px; }

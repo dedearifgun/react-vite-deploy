@@ -160,6 +160,34 @@ const AdminUsers = () => {
       <AdminSidebar />
       <div className="admin-content">
         <Container fluid className="app">
+          <style>{`
+            /* Mobile stacked table for admin lists */
+            .table-stacked td { vertical-align: middle; }
+            @media (max-width: 576px) {
+              .table-stacked thead { display: none; }
+              .table-stacked tbody tr {
+                display: block;
+                border-bottom: 1px solid var(--card-strong);
+                margin-bottom: 10px;
+              }
+              .table-stacked tbody td {
+                display: grid;
+                grid-template-columns: 120px 1fr;
+                gap: 8px;
+                padding: 6px 0 !important;
+                width: 100% !important;
+              }
+              .table-stacked tbody td::before {
+                content: attr(data-label);
+                color: var(--muted);
+                font-weight: 600;
+              }
+              .table-stacked .col-actions > * {
+                margin-right: 8px;
+                margin-bottom: 6px;
+              }
+            }
+          `}</style>
           <div className="d-flex justify-content-between align-items-end mb-3 flex-wrap">
             <h2 className="admin-title">Manajemen Pengguna</h2>
             <div className="d-flex gap-2">
@@ -191,7 +219,7 @@ const AdminUsers = () => {
                 </div>
               ) : (
                 <div className="content-scroll">
-                  <Table responsive hover className="admin-table">
+                  <Table responsive hover className="admin-table table-stacked">
                     <thead>
                       <tr>
                         <th className="col-name">Nama</th>
@@ -204,11 +232,11 @@ const AdminUsers = () => {
                     <tbody>
                       {users.map((u) => (
                         <tr key={u._id}>
-                          <td className="col-name">{u.name}</td>
-                          <td className="col-name">{u.username}</td>
-                          <td className="col-name">{u.email}</td>
-                          <td className="col-gender">{u.role}</td>
-                          <td className="col-actions">
+                          <td className="col-name" data-label="Nama">{u.name}</td>
+                          <td className="col-name" data-label="Username">{u.username}</td>
+                          <td className="col-name" data-label="Email">{u.email}</td>
+                          <td className="col-gender" data-label="Role">{u.role}</td>
+                          <td className="col-actions" data-label="Aksi">
                             {isAdmin && (
                               <>
                                 <Button variant="outline-primary" size="sm" className="me-2" onClick={() => openEditModal(u)}>

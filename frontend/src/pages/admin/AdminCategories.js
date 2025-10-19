@@ -9,6 +9,49 @@ import { categoryAPI } from '../../utils/api';
 import SuccessToast from '../../components/SuccessToast';
 import ErrorNotice from '../../components/ErrorNotice';
 
+/* Admin select styles (dark theme friendly) */
+const selectStyles = {
+  control: (base, state) => ({
+    ...base,
+    backgroundColor: 'var(--card)',
+    borderColor: 'var(--card-strong)',
+    boxShadow: state.isFocused ? '0 0 0 2px rgba(255,255,255,0.18)' : 'none',
+    '&:hover': { borderColor: 'var(--card-strong)' },
+  }),
+  singleValue: (base) => ({ ...base, color: 'var(--text)' }),
+  input: (base) => ({ ...base, color: 'var(--text)' }),
+  placeholder: (base) => ({ ...base, color: 'var(--muted)' }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: 'var(--bg-soft)',
+    color: 'var(--text)',
+    border: '1px solid var(--card-strong)',
+    boxShadow: 'none',
+  }),
+  menuList: (base) => ({
+    ...base,
+    backgroundColor: 'var(--bg-soft)',
+    paddingTop: 0,
+    paddingBottom: 0,
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? 'var(--card)'
+      : state.isFocused
+      ? 'var(--card-strong)'
+      : 'var(--bg-soft)',
+    color: 'var(--text)',
+  }),
+  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+};
+
+const genderOptions = [
+  { value: 'unisex', label: 'Aksesoris' },
+  { value: 'pria', label: 'Pria' },
+  { value: 'wanita', label: 'Wanita' },
+];
+
   const AdminCategories = () => {
   const currentUser = (() => {
     try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
@@ -180,6 +223,34 @@ import ErrorNotice from '../../components/ErrorNotice';
       <AdminSidebar />
       <div className="admin-content">
         <Container fluid className="app">
+          <style>{`
+            /* Mobile stacked table for admin lists */
+            .table-stacked td { vertical-align: middle; }
+            @media (max-width: 576px) {
+              .table-stacked thead { display: none; }
+              .table-stacked tbody tr {
+                display: block;
+                border-bottom: 1px solid var(--card-strong);
+                margin-bottom: 10px;
+              }
+              .table-stacked tbody td {
+                display: grid;
+                grid-template-columns: 120px 1fr;
+                gap: 8px;
+                padding: 6px 0 !important;
+                width: 100% !important;
+              }
+              .table-stacked tbody td::before {
+                content: attr(data-label);
+                color: var(--muted);
+                font-weight: 600;
+              }
+              .table-stacked .col-actions > * {
+                margin-right: 8px;
+                margin-bottom: 6px;
+              }
+            }
+          `}</style>
           <div className="d-flex justify-content-between align-items-end mb-3 flex-wrap">
             <h2 className="admin-title">Manajemen Kategori</h2>
             <div className="d-flex gap-2">
@@ -196,7 +267,7 @@ import ErrorNotice from '../../components/ErrorNotice';
             <Card>
               <Card.Body>
                 <div className="content-scroll">
-                  <Table responsive hover className="admin-table">
+                  <Table responsive hover className="admin-table table-stacked">
                   <thead>
                     <tr>
                       <th className="col-name">Nama</th>
@@ -215,16 +286,16 @@ import ErrorNotice from '../../components/ErrorNotice';
                         onDrop={() => onDrop(idx)}
                         style={{ cursor: 'move' }}
                       >
-                        <td className="col-name">{category.name}</td>
-                        <td className="col-gender">
+                        <td className="col-name" data-label="Nama">{category.name}</td>
+                        <td className="col-gender" data-label="Gender">
                           {category.gender === 'men' && 'Pria'}
                           {category.gender === 'women' && 'Wanita'}
                           {category.gender === 'unisex' && 'Aksesoris'}
                           {category.gender === 'pria' && 'Pria'}
                           {category.gender === 'wanita' && 'Wanita'}
                         </td>
-                        <td className="col-subcategory">{(category.subcategories || []).join(', ') || '-'}</td>
-                        <td className="col-actions">
+                        <td className="col-subcategory" data-label="Sub Kategori">{(category.subcategories || []).join(', ') || '-'}</td>
+                        <td className="col-actions" data-label="Aksi">
                           <Button
                             variant="outline-primary"
                             size="sm"
@@ -371,43 +442,3 @@ import ErrorNotice from '../../components/ErrorNotice';
 };
 
 export default AdminCategories;
-    const selectStyles = {
-      control: (base, state) => ({
-        ...base,
-        backgroundColor: 'var(--card)',
-        borderColor: 'var(--card-strong)',
-        boxShadow: state.isFocused ? '0 0 0 2px rgba(255,255,255,0.18)' : 'none',
-        '&:hover': { borderColor: 'var(--card-strong)' },
-      }),
-      singleValue: (base) => ({ ...base, color: 'var(--text)' }),
-      input: (base) => ({ ...base, color: 'var(--text)' }),
-      placeholder: (base) => ({ ...base, color: 'var(--muted)' }),
-      menu: (base) => ({
-        ...base,
-        backgroundColor: 'var(--bg-soft)',
-        color: 'var(--text)',
-        border: '1px solid var(--card-strong)',
-        boxShadow: 'none',
-      }),
-      menuList: (base) => ({
-        ...base,
-        backgroundColor: 'var(--bg-soft)',
-        paddingTop: 0,
-        paddingBottom: 0,
-      }),
-      option: (base, state) => ({
-        ...base,
-        backgroundColor: state.isSelected
-          ? 'var(--card)'
-          : state.isFocused
-          ? 'var(--card-strong)'
-          : 'var(--bg-soft)',
-        color: 'var(--text)',
-      }),
-      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-    };
-    const genderOptions = [
-      { value: 'unisex', label: 'Aksesoris' },
-      { value: 'pria', label: 'Pria' },
-      { value: 'wanita', label: 'Wanita' },
-    ];

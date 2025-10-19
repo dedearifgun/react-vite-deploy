@@ -90,3 +90,59 @@ code {
 * {
   font-family: 'Roboto Condensed', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
+
+/* ===== Responsive Framework Variables & Utilities ===== */
+/* Breakpoints konsisten untuk seluruh aplikasi */
+:root {
+  --bp-xs: 360px;
+  --bp-sm: 576px;
+  --bp-md: 768px;
+  --bp-lg: 992px;
+  --bp-xl: 1200px;
+  --bp-xxl: 1400px;
+}
+
+/* Kontainer responsif ringan (tidak menimpa .container Bootstrap) */
+.container-responsive {
+  width: 100%;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (min-width: 576px) { .container-responsive { max-width: 540px; } }
+@media (min-width: 768px) { .container-responsive { max-width: 720px; } }
+@media (min-width: 992px) { .container-responsive { max-width: 960px; } }
+@media (min-width: 1200px) { .container-responsive { max-width: 1140px; } }
+@media (min-width: 1400px) { .container-responsive { max-width: 1320px; } }
+
+/* Utility helpers: sembunyikan/tampilkan berdasarkan breakpoint */
+.hidden-sm-down { display: none !important; }         /* default: hidden */
+@media (min-width: 576px) { .hidden-sm-down { display: initial !important; } }
+
+.hidden-md-up { display: initial !important; }        /* default: visible */
+@media (min-width: 768px) { .hidden-md-up { display: none !important; } }
+
+/* Tipografi fluid untuk heading/subheading */
+.fluid-text-xl { font-size: clamp(1.25rem, 2.5vw + 0.5rem, 2rem); }
+.fluid-text-lg { font-size: clamp(1.125rem, 2vw + 0.4rem, 1.5rem); }
+.fluid-text-md { font-size: clamp(1rem, 1.5vw + 0.35rem, 1.25rem); }
+
+/* Media responsif secara default */
+img, svg, video { max-width: 100%; height: auto; }
+
+/* Penyesuaian topbar teks (Header) pada mobile sebelum hamburger diaktifkan */
+@media (max-width: 768px) {
+  .text-navbar__inner { grid-template-columns: auto 1fr auto; padding: 10px 12px; }
+  .text-navbar__brand-img { height: 36px; width: auto; }
+}
+
+/* Grid responsif utilitas yang bisa dipakai di section umum */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 576px) { .responsive-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 992px) { .responsive-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1200px) { .responsive-grid { grid-template-columns: repeat(4, 1fr); } }

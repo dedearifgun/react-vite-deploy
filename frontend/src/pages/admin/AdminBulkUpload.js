@@ -146,6 +146,30 @@ const AdminBulkUpload = () => {
       <AdminSidebar />
       <div className="admin-content">
         <Container fluid className="app">
+          <style>{`
+            /* Mobile stacked table for admin lists */
+            .table-stacked td { vertical-align: middle; }
+            @media (max-width: 576px) {
+              .table-stacked thead { display: none; }
+              .table-stacked tbody tr {
+                display: block;
+                border-bottom: 1px solid var(--card-strong);
+                margin-bottom: 10px;
+              }
+              .table-stacked tbody td {
+                display: grid;
+                grid-template-columns: 120px 1fr;
+                gap: 8px;
+                padding: 6px 0 !important;
+                width: 100% !important;
+              }
+              .table-stacked tbody td::before {
+                content: attr(data-label);
+                color: var(--muted);
+                font-weight: 600;
+              }
+            }
+          `}</style>
           <div className="d-flex justify-content-between align-items-end mb-3 flex-wrap">
             <h2 className="admin-title mb-0">Manajemen Bulk Upload</h2>
           </div>
@@ -185,7 +209,7 @@ const AdminBulkUpload = () => {
               <Card.Body>
                 <Card.Title>Preview ({rows.length} baris)</Card.Title>
                 <div className="content-scroll">
-                  <Table striped hover size="sm" className="admin-table">
+                  <Table striped hover size="sm" className="admin-table table-stacked">
                     <thead>
                       <tr>
                         <th className="col-index">#</th>
@@ -202,15 +226,15 @@ const AdminBulkUpload = () => {
                     <tbody>
                       {rows.map(r => (
                         <tr key={r._row}>
-                          <td className="col-index">{r._row}</td>
-                          <td className="col-name">{r.name}</td>
-                          <td className="col-category">{r.categoryName}</td>
-                          <td className="col-gender">{r.gender}</td>
-                          <td className="col-price">{r.price}</td>
-                          <td className="col-sizes">{(r.sizes || []).join(', ')}</td>
-                          <td className="col-colors">{(r.colors || []).join(', ')}</td>
-                          <td className="col-status">{r.status}</td>
-                          <td className="col-imageurl">{r.imageUrl}</td>
+                          <td className="col-index" data-label="#"> {r._row}</td>
+                          <td className="col-name" data-label="Nama">{r.name}</td>
+                          <td className="col-category" data-label="Kategori">{r.categoryName}</td>
+                          <td className="col-gender" data-label="Gender">{r.gender}</td>
+                          <td className="col-price" data-label="Harga">{r.price}</td>
+                          <td className="col-sizes" data-label="Sizes">{(r.sizes || []).join(', ')}</td>
+                          <td className="col-colors" data-label="Colors">{(r.colors || []).join(', ')}</td>
+                          <td className="col-status" data-label="Status">{r.status}</td>
+                          <td className="col-imageurl" data-label="Image URL">{r.imageUrl}</td>
                         </tr>
                       ))}
                     </tbody>

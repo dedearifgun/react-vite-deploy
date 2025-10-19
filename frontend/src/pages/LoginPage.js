@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Card, Alert, InputGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../utils/api';
 
@@ -9,6 +9,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -32,7 +33,21 @@ const LoginPage = () => {
   };
 
   return (
-    <Container className="py-5">
+    <Container className="py-4 with-navbar-offset">
+      <style>{`
+        /* Responsive tweaks for Login page */
+        .login-form { border-radius: 12px; }
+        .login-form .form-control { min-height: 40px; font-size: 1rem; }
+        @media (max-width: 768px) {
+          .login-form { margin: 24px auto; padding: 20px; }
+        }
+        @media (max-width: 576px) {
+          .login-form { margin: 16px auto; padding: 16px; }
+          .login-form h2 { font-size: 1.5rem; }
+          .login-form .form-control { min-height: 38px; font-size: 0.95rem; }
+          .login-form .btn { min-height: 40px; font-size: 1rem; }
+        }
+      `}</style>
       <Helmet>
         <title>Login Admin | Narpati Leather</title>
         <meta name="robots" content="noindex,nofollow" />
@@ -43,7 +58,7 @@ const LoginPage = () => {
           <Card className="login-form">
             <Card.Body>
               <h2 className="text-center mb-4">Login Admin</h2>
-              {error && <Alert variant="danger">{error}</Alert>}
+              {error && <Alert variant="danger" role="alert">{error}</Alert>}
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
                   <Form.Label>Username</Form.Label>
@@ -52,17 +67,33 @@ const LoginPage = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
+                    autoComplete="username"
+                    inputMode="text"
+                    enterKeyHint="next"
                   />
                 </Form.Group>
 
                 <Form.Group className="mb-4">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <InputGroup>
+                    <Form.Control
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoComplete="current-password"
+                      inputMode="text"
+                      enterKeyHint="done"
+                    />
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => setShowPassword(v => !v)}
+                      aria-pressed={showPassword}
+                      title={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                    >
+                      {showPassword ? 'Sembunyikan' : 'Tampilkan'}
+                    </Button>
+                  </InputGroup>
                 </Form.Group>
 
                 <Button 

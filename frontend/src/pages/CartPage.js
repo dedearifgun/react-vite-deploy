@@ -57,11 +57,38 @@ const CartPage = () => {
 
   return (
     <Container className="py-4 with-navbar-offset">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Keranjang</h2>
-        <div className="d-flex gap-2">
-          <Button variant="outline-danger" onClick={onClear} disabled={!items.length}>Kosongkan</Button>
-          <Button variant="success" onClick={onWhatsAppCheckout} disabled={!items.length}>Checkout via WhatsApp</Button>
+      <style>{`
+        /* Cart responsive tweaks */
+        @media (max-width: 576px) {
+          .cart-header { gap: 8px; }
+          .cart-actions { width: 100%; display: flex; flex-direction: column !important; }
+          .cart-actions .btn { width: 100%; }
+          .cart-qty-input { max-width: 96px; }
+        }
+        @media (min-width: 577px) {
+          .cart-actions { display: inline-flex; flex-direction: row; }
+        }
+        .cart-qty-input { width: 96px; }
+
+        /* Product image size tuning */
+        .cart-product-img { width: 56px; height: 56px; object-fit: cover; }
+        @media (max-width: 576px) {
+          .cart-product-img { width: 48px; height: 48px; }
+        }
+
+        /* Table readability and stacking on small screens */
+        .cart-table td { vertical-align: middle; }
+        @media (max-width: 576px) {
+          .cart-table thead { display: none; }
+          .cart-table tbody tr { display: block; border-bottom: 1px solid #e5e7eb; margin-bottom: 10px; }
+          .cart-table tbody td { display: block; width: 100% !important; padding: 6px 0 !important; }
+        }
+      `}</style>
+      <div className="cart-header d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3">
+        <h2 className="mb-0">Keranjang</h2>
+        <div className="cart-actions d-flex gap-2">
+          <Button className="w-100 w-sm-auto" variant="outline-danger" onClick={onClear} disabled={!items.length}>Kosongkan</Button>
+          <Button className="w-100 w-sm-auto" variant="success" onClick={onWhatsAppCheckout} disabled={!items.length}>Checkout via WhatsApp</Button>
         </div>
       </div>
 
@@ -72,7 +99,7 @@ const CartPage = () => {
         </div>
       ) : (
         <>
-          <Table responsive bordered hover>
+          <Table responsive bordered hover className="cart-table">
             <thead>
               <tr>
                 <th>Produk</th>
@@ -88,7 +115,7 @@ const CartPage = () => {
                   <td>
                     <div className="d-flex align-items-center gap-2">
                       {it.imageUrl && (
-                        <Image src={resolveAssetUrl(it.imageUrl)} alt={it.name} width={64} height={64} rounded loading="lazy" decoding="async" />
+                        <Image src={resolveAssetUrl(it.imageUrl)} alt={it.name} className="cart-product-img" rounded loading="lazy" decoding="async" />
                       )}
                       <div>
                         <div className="fw-semibold">{it.name}</div>
@@ -105,8 +132,13 @@ const CartPage = () => {
                   </td>
                   <td>
                     <Form.Control
+                      className="cart-qty-input"
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       min={1}
+                      step={1}
+                      aria-label={`Jumlah untuk ${it.name}`}
                       value={it.quantity || 1}
                       onChange={(e) => onQtyChange(idx, e.target.value)}
                     />

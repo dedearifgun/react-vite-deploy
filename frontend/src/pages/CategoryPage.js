@@ -106,7 +106,7 @@ const CategoryPage = () => {
   const ogImage = currentCategory?.imageUrl || '';
 
   return (
-    <Container className="py-4 with-navbar-offset px-3 px-lg-4">
+    <Container className="py-4 with-navbar-offset p-0">
       <Helmet>
         <title>Koleksi {genderTitle} | Narpati Leather</title>
         <meta name="description" content={`Belanja koleksi ${genderTitle} kualitas tertinggi dengan harga jujur.`} />
@@ -148,36 +148,39 @@ const CategoryPage = () => {
           </div>
 
           {/* Controls bar dihapus sesuai permintaan */}
-          {loading ? (
-            <Row>
-              {Array.from({ length: limit }).map((_, idx) => (
-                <Col key={idx} lg={3} md={4} sm={6} className="mb-4 d-flex">
-                  <div className="skeleton-card">
-                    <div className="skeleton-img" />
-                    <div className="skeleton-text" style={{ width: '60%' }} />
-                    <div className="skeleton-text" style={{ width: '40%' }} />
-                  </div>
-                </Col>
-              ))}
-            </Row>
-          ) : (
-            <Row>
-              {products.length > 0 ? (
-                products.map(product => (
-                  <Col key={product._id || product.id} lg={3} md={4} sm={6} className="mb-4 d-flex">
-                    <ProductCard product={product} />
+          {/* Tambahkan wrapper section agar ada gutter putih kiri/kanan seperti baris atas */}
+          <div className="category-section">
+            {loading ? (
+              <Row className="product-grid">
+                {Array.from({ length: limit }).map((_, idx) => (
+                  <Col key={idx} lg={3} md={4} sm={6} className="mb-4 d-flex">
+                    <div className="skeleton-card">
+                      <div className="skeleton-img" />
+                      <div className="skeleton-text" style={{ width: '60%' }} />
+                      <div className="skeleton-text" style={{ width: '40%' }} />
+                    </div>
                   </Col>
-                ))
-              ) : (
-                <Col>
-                  <div className="text-center py-5">
-                    <h4>Tidak ada produk yang ditemukan</h4>
-                    <p>Silakan coba kategori lain atau kembali ke halaman utama</p>
-                  </div>
-                </Col>
-              )}
-            </Row>
-          )}
+                ))}
+              </Row>
+            ) : (
+              <Row className="product-grid">
+                {products.length > 0 ? (
+                  products.map(product => (
+                    <Col key={product._id || product.id} lg={3} md={4} sm={6} className="mb-4 d-flex">
+                      <ProductCard product={product} />
+                    </Col>
+                  ))
+                ) : (
+                  <Col>
+                    <div className="text-center py-5">
+                      <h4>Tidak ada produk yang ditemukan</h4>
+                      <p>Silakan coba kategori lain atau kembali ke halaman utama</p>
+                    </div>
+                  </Col>
+                )}
+              </Row>
+            )}
+          </div>
         </Col>
       </Row>
       
