@@ -1,8 +1,13 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5015/api';
+// Use relative URL for production, localhost for development
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ||
+  (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5015/api');
+
 // Ekspor origin agar bisa digunakan untuk membentuk URL aset
-export const API_ORIGIN = new URL(API_BASE_URL).origin;
+export const API_ORIGIN = process.env.NODE_ENV === 'production'
+  ? window.location.origin
+  : new URL(API_BASE_URL).origin;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
