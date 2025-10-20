@@ -16,6 +16,13 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+    console.log('=== API REQUEST ===');
+    console.log('Method:', config.method?.toUpperCase());
+    console.log('URL:', config.baseURL + config.url);
+    console.log('Base URL:', API_BASE_URL);
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('API Base URL from env:', process.env.REACT_APP_API_BASE_URL);
+    
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -26,8 +33,20 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('=== API RESPONSE ===');
+    console.log('Status:', response.status);
+    console.log('URL:', response.config.url);
+    console.log('Data:', response.data);
+    return response;
+  },
   (error) => {
+    console.log('=== API ERROR ===');
+    console.log('Status:', error.response?.status);
+    console.log('URL:', error.config?.url);
+    console.log('Message:', error.message);
+    console.log('Response:', error.response?.data);
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
       window.location.href = '/login';

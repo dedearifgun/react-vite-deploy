@@ -22,7 +22,7 @@
     },
     {
       "src": "/uploads/(.*)",
-      "dest": "/api/$1"
+      "dest": "/api/index.js"
     },
     {
       "src": "/static/(.*)",
@@ -31,6 +31,10 @@
     {
       "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$)",
       "dest": "/$1"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
