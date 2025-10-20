@@ -100,23 +100,42 @@ module.exports = async (req, res) => {
   console.log('=== API SERVERLESS FUNCTION CALLED ===');
   console.log('Method:', req.method);
   console.log('URL:', req.url);
+  console.log('Full URL:', req.protocol + '://' + req.get('host') + req.url);
   console.log('Environment:', {
     NODE_ENV: process.env.NODE_ENV,
     MONGO_URI: process.env.MONGO_URI ? 'SET' : 'NOT SET',
+    MONGO_URI_LENGTH: process.env.MONGO_URI ? process.env.MONGO_URI.length : 0,
     JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
     BASE_URL: process.env.BASE_URL || 'NOT SET',
     VERCEL_URL: process.env.VERCEL_URL || 'NOT SET'
   });
   
+  // Test database connection immediately
   try {
+    console.log('Attempting to connect to database...');
     await connectToDatabase();
+    console.log('Database connection successful, proceeding with request...');
     return app(req, res);
   } catch (error) {
-    console.error('Serverless function error:', error);
-    return res.status(500).json({
-      error: 'Serverless function failed',
+    console.error('Database connection failed:', error);
+    console.error('Error details:', {
+      name: error.name,
       message: error.message,
-      details: 'Check environment variables and database connection'
+      stack: error.stack
+    });
+    
+    // Return detailed error for debugging
+    return res.status(500).json({
+      error: 'Database connection failed',
+      message: error.message,
+      details: {
+        envSet: {
+          MONGO_URI: !!process.env.MONGO_URI,
+          JWT_SECRET: !!process.env.JWT_SECRET,
+          NODE_ENV: process.env.NODE_ENV
+        },
+        error: error.name
+      }
     });
   }
 };
