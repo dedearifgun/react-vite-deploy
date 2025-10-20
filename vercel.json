@@ -4,7 +4,11 @@
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "build" }
+      "config": {
+        "distDir": "build",
+        "installCommand": "npm install",
+        "buildCommand": "npm run build"
+      }
     },
     {
       "src": "api/index.js",
@@ -21,8 +25,16 @@
       "dest": "/api/$1"
     },
     {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$)",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "dest": "/index.html"
     }
   ],
   "functions": {
