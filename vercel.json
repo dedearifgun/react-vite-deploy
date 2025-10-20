@@ -6,23 +6,27 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build",
-        "installCommand": "npm install",
-        "buildCommand": "npm run build"
+        "installCommand": "cd frontend && npm install",
+        "buildCommand": "cd frontend && npm run build"
       }
     },
     {
-      "src": "api/index.js",
+      "src": "backend/server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/backend/server.js"
     },
     {
       "src": "/uploads/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/backend/server.js"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/backend/server.js"
     },
     {
       "src": "/static/(.*)",
@@ -33,17 +37,16 @@
       "dest": "/$1"
     },
     {
-      "src": "/sitemap.xml",
-      "dest": "/api/index.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
   ],
   "functions": {
-    "api/index.js": {
+    "backend/server.js": {
       "maxDuration": 10
     }
+  },
+  "env": {
+    "NODE_ENV": "production"
   }
 }

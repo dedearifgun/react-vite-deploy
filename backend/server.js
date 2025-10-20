@@ -100,14 +100,59 @@ app.get('/sitemap.xml', async (req, res) => {
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/narpati-leather';
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log('Terhubung ke database MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server berjalan di port ${PORT}`);
-    });
-  })
-  .catch((err) => {
+// Database connection for serverless environment
+let isConnected = false;
+
+const connectToDatabase = async () => {
+  if (isConnected) return;
+  
+  try {
+    await mongoose.connect(MONGO_URI);
+    isConnected = true;
+    console.log('Terhubung ke database MongoDB (Serverless)');
+  } catch (err) {
     console.error('Gagal terhubung ke MongoDB:', err.message);
+    throw err;
+  }
+};
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  mongoose
+    .connect(MONGO_URI)
+    .then(() => {
+      console.log('Terhubung ke database MongoDB (Local)');
+      app.listen(PORT, () => {
+        console.log(`Server berjalan di port ${PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error('Gagal terhubung ke MongoDB:', err.message);
+    });
+}
+
+// Export for Vercel serverless functions
+module.exports = async (req, res) => {
+  console.log('=== BACKEND SERVERLESS FUNCTION CALLED ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Environment:', {
+    NODE_ENV: process.env.NODE_ENV,
+    MONGO_URI: process.env.MONGO_URI ? 'SET' : 'NOT SET',
+    JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
+    BASE_URL: process.env.BASE_URL || 'NOT SET',
+    VERCEL_URL: process.env.VERCEL_URL || 'NOT SET'
   });
+  
+  try {
+    await connectToDatabase();
+    return app(req, res);
+  } catch (error) {
+    console.error('Serverless function error:', error);
+    return res.status(500).json({
+      error: 'Serverless function failed',
+      message: error.message,
+      details: 'Check environment variables and database connection'
+    });
+  }
+};
