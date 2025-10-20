@@ -34,35 +34,9 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/db', dbRoutes);
 
-// Handle uploads directory - serve static files from backend/uploads
-const fs = require('fs');
-const uploadsDir = path.join(__dirname, '../backend/uploads');
-
-app.use('/uploads', (req, res, next) => {
-  console.log('=== UPLOADS REQUEST ===');
-  console.log('URL:', req.url);
-  console.log('Uploads directory exists:', fs.existsSync(uploadsDir));
-  
-  const filePath = path.join(uploadsDir, req.url);
-  console.log('Full file path:', filePath);
-  console.log('File exists:', fs.existsSync(filePath));
-  
-  if (fs.existsSync(filePath)) {
-    // Set appropriate headers for images
-    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(filePath)) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      res.setHeader('Content-Type', 'image/' + path.extname(filePath).slice(1));
-    }
-    return res.sendFile(filePath);
-  } else {
-    console.log('File not found, returning 404');
-    return res.status(404).json({ error: 'File not found', path: req.url });
-  }
-});
-
 // Default route
 app.get('/', (req, res) => {
-  res.send('API untuk E-Commerce Kerajinan Kulit');
+  res.send('API untuk E-Commerce Kerajinan Kulit - Vercel Serverless');
 });
 
 // Sitemap
@@ -105,7 +79,7 @@ app.get('/sitemap.xml', async (req, res) => {
 // Connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/narpati-leather';
 
-// Connect to MongoDB before handling requests
+// Database connection for serverless environment
 let isConnected = false;
 
 const connectToDatabase = async () => {
@@ -114,19 +88,18 @@ const connectToDatabase = async () => {
   try {
     await mongoose.connect(MONGO_URI);
     isConnected = true;
-    console.log('Terhubung ke database MongoDB');
+    console.log('Terhubung ke database MongoDB (Serverless)');
   } catch (err) {
     console.error('Gagal terhubung ke MongoDB:', err.message);
     throw err;
   }
 };
 
-// Export as serverless function
+// Export for Vercel serverless functions
 module.exports = async (req, res) => {
-  console.log('=== API FUNCTION CALLED ===');
+  console.log('=== API SERVERLESS FUNCTION CALLED ===');
   console.log('Method:', req.method);
   console.log('URL:', req.url);
-  console.log('Headers:', JSON.stringify(req.headers, null, 2));
   console.log('Environment:', {
     NODE_ENV: process.env.NODE_ENV,
     MONGO_URI: process.env.MONGO_URI ? 'SET' : 'NOT SET',
@@ -137,14 +110,13 @@ module.exports = async (req, res) => {
   
   try {
     await connectToDatabase();
-    console.log('Database connected successfully');
     return app(req, res);
   } catch (error) {
-    console.error('Database connection failed:', error);
+    console.error('Serverless function error:', error);
     return res.status(500).json({
-      error: 'Database connection failed',
+      error: 'Serverless function failed',
       message: error.message,
-      details: 'Check environment variables and MongoDB connection'
+      details: 'Check environment variables and database connection'
     });
   }
 };
