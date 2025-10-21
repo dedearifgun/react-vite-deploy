@@ -1,4 +1,5 @@
 {
+  "rootDirectory": "",
   "version": 2,
   "builds": [
     {
@@ -9,7 +10,7 @@
       }
     },
     {
-      "src": "api/index.js",
+      "src": "backend/server.js",
       "use": "@vercel/node",
       "config": {
         "maxDuration": 10
@@ -19,11 +20,11 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/backend/server.js"
     },
     {
       "src": "/sitemap.xml",
-      "dest": "/api/index.js"
+      "dest": "/backend/server.js"
     },
     {
       "src": "/(.*)",
