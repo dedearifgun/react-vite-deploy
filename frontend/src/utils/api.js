@@ -23,6 +23,18 @@ api.interceptors.request.use(
     console.log('Environment:', process.env.NODE_ENV);
     console.log('API Base URL from env:', process.env.REACT_APP_API_BASE_URL);
     
+    // ADDITIONAL DEBUGGING FOR DEPLOYMENT ISSUES
+    console.log('=== FRONTEND API DEBUG INFO ===');
+    console.log('Window Location:', window.location.href);
+    console.log('Window Origin:', window.location.origin);
+    console.log('Current Timestamp:', new Date().toISOString());
+    console.log('Full Request Config:', {
+      baseURL: config.baseURL,
+      url: config.url,
+      method: config.method,
+      headers: config.headers
+    });
+    
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

@@ -131,28 +131,163 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
+// Debug endpoint for testing environment and database connection
+app.get('/debug', async (req, res) => {
+  const debugInfo = {
+    timestamp: new Date().toISOString(),
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL_ENV: process.env.VERCEL_ENV,
+      VERCEL_URL: process.env.VERCEL_URL,
+      BASE_URL: process.env.BASE_URL,
+      MONGO_URI_SET: !!process.env.MONGO_URI,
+      MONGO_URI_LENGTH: process.env.MONGO_URI?.length || 0,
+      JWT_SECRET_SET: !!process.env.JWT_SECRET,
+      JWT_SECRET_LENGTH: process.env.JWT_SECRET?.length || 0
+    },
+    mongo_uri_analysis: null,
+    database_connection: null
+  };
+  
+  // Analyze MONGO_URI if set (without exposing credentials)
+  if (process.env.MONGO_URI) {
+    const uri = process.env.MONGO_URI;
+    debugInfo.mongo_uri_analysis = {
+      protocol: uri.split('://')[0],
+      has_credentials: uri.includes('@'),
+      host: uri.split('@')[1]?.split('/')[0] || 'NOT_FOUND',
+      database: uri.split('@')[1]?.split('/')[1]?.split('?')[0] || 'NOT_SPECIFIED',
+      has_retry_writes: uri.includes('retryWrites=true'),
+      has_w_majority: uri.includes('w=majority')
+    };
+  }
+  
+  // Test database connection
+  try {
+    const startTime = Date.now();
+    await connectToDatabase();
+    const connectionTime = Date.now() - startTime;
+    debugInfo.database_connection = {
+      success: true,
+      connection_time_ms: connectionTime,
+      mongoose_state: mongoose.connection.readyState,
+      mongoose_states: {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting'
+      }
+    };
+  } catch (error) {
+    debugInfo.database_connection = {
+      success: false,
+      error: {
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        constructor: error.constructor.name
+      }
+    };
+  }
+  
+  res.json(debugInfo);
+});
+
 // Export for Vercel serverless functions
 module.exports = async (req, res) => {
   console.log('=== BACKEND SERVERLESS FUNCTION CALLED ===');
   console.log('Method:', req.method);
   console.log('URL:', req.url);
-  console.log('Environment:', {
-    NODE_ENV: process.env.NODE_ENV,
-    MONGO_URI: process.env.MONGO_URI ? 'SET' : 'NOT SET',
-    JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
-    BASE_URL: process.env.BASE_URL || 'NOT SET',
-    VERCEL_URL: process.env.VERCEL_URL || 'NOT SET'
+  console.log('Full URL:', req.protocol + '://' + req.get('host') + req.url);
+  console.log('Timestamp:', new Date().toISOString());
+  
+  // ADDITIONAL DEBUGGING FOR ROUTING ISSUES
+  console.log('=== ROUTING DEBUG INFO ===');
+  console.log('Request Path:', req.path);
+  console.log('Request Query:', req.query);
+  console.log('Request Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('Vercel Environment:', {
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    VERCEL_URL: process.env.VERCEL_URL,
+    VERCEL_REGION: process.env.VERCEL_REGION
   });
   
+  // Enhanced environment debugging
+  const envDebug = {
+    NODE_ENV: process.env.NODE_ENV,
+    MONGO_URI: process.env.MONGO_URI ? 'SET' : 'NOT SET',
+    MONGO_URI_LENGTH: process.env.MONGO_URI ? process.env.MONGO_URI.length : 0,
+    MONGO_URI_PREFIX: process.env.MONGO_URI ? process.env.MONGO_URI.split('://')[0] : 'NONE',
+    MONGO_URI_DOMAIN: process.env.MONGO_URI ? process.env.MONGO_URI.split('@')[1]?.split('/')[0] : 'NONE',
+    JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
+    JWT_SECRET_LENGTH: process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0,
+    BASE_URL: process.env.BASE_URL || 'NOT SET',
+    VERCEL_URL: process.env.VERCEL_URL || 'NOT SET',
+    VERCEL_ENV: process.env.VERCEL_ENV || 'NOT SET'
+  };
+  console.log('Environment Debug:', envDebug);
+  
+  // Test database connection with detailed logging
   try {
+    console.log('=== DATABASE CONNECTION ATTEMPT ===');
+    console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
+    console.log('MONGO_URI length:', process.env.MONGO_URI?.length || 0);
+    
+    if (process.env.MONGO_URI) {
+      const uriParts = process.env.MONGO_URI.split('://');
+      console.log('Protocol:', uriParts[0]);
+      if (uriParts[1]) {
+        const credentialsAndHost = uriParts[1].split('@');
+        console.log('Has credentials:', credentialsAndHost.length > 1);
+        if (credentialsAndHost[1]) {
+          const hostAndDb = credentialsAndHost[1].split('/');
+          console.log('Host:', hostAndDb[0]);
+          console.log('Database:', hostAndDb[1] || 'NOT SPECIFIED');
+        }
+      }
+    }
+    
+    console.log('Attempting to connect to database...');
+    const startTime = Date.now();
     await connectToDatabase();
+    const connectionTime = Date.now() - startTime;
+    console.log('Database connection successful in', connectionTime, 'ms');
+    console.log('Proceeding with request...');
     return app(req, res);
   } catch (error) {
-    console.error('Serverless function error:', error);
+    console.error('=== DATABASE CONNECTION FAILED ===');
+    console.error('Error Type:', error.constructor.name);
+    console.error('Error Message:', error.message);
+    console.error('Error Code:', error.code || 'NO_CODE');
+    console.error('Error Stack:', error.stack);
+    
+    // Specific MongoDB error debugging
+    if (error.name === 'MongooseServerSelectionError') {
+      console.error('MongoDB Server Selection Error Details:');
+      console.error('- Reason:', error.reason?.servers || 'NO_SERVER_INFO');
+      console.error('- All servers:', error.reason?.allServers || 'NO_SERVER_LIST');
+    }
+    
+    // Return detailed error for debugging
     return res.status(500).json({
-      error: 'Serverless function failed',
+      error: 'Database connection failed',
       message: error.message,
-      details: 'Check environment variables and database connection'
+      timestamp: new Date().toISOString(),
+      debug: {
+        envSet: {
+          MONGO_URI: !!process.env.MONGO_URI,
+          MONGO_URI_LENGTH: process.env.MONGO_URI?.length || 0,
+          JWT_SECRET: !!process.env.JWT_SECRET,
+          JWT_SECRET_LENGTH: process.env.JWT_SECRET?.length || 0,
+          NODE_ENV: process.env.NODE_ENV,
+          VERCEL_ENV: process.env.VERCEL_ENV
+        },
+        error: {
+          name: error.name,
+          code: error.code,
+          constructor: error.constructor.name
+        }
+      }
     });
   }
 };
